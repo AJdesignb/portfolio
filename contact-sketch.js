@@ -232,6 +232,86 @@ function draw() {
   image(Starimg, 20 * scaleFactor, 90 * scaleFactor, 120 * scaleFactor, 120 * scaleFactor);
   image(Starimg, 1000* scaleFactor, 90 * scaleFactor, 120 * scaleFactor, 120 * scaleFactor);
 
+  //cursor management
+  let isHovering = false;
+
+  // Check Resume Download GIF hover
+  if (mouseX >= 1325 * scaleFactor && 
+      mouseX <= 1325 * scaleFactor + 100 * scaleFactor &&
+      mouseY >= 80 * scaleFactor && 
+      mouseY <= 80 * scaleFactor + 100 * scaleFactor) {
+    isHovering = true;
+  }
+  
+  // Check Resume text hover
+  textFont(font);
+  textSize(50 * scaleFactor);
+  let resumeTextWidth = textWidth("Resume");
+  if (mouseX >= 1300 * scaleFactor && 
+      mouseX <= 1300 * scaleFactor + resumeTextWidth &&
+      mouseY >= 170 * scaleFactor && 
+      mouseY <= 170 * scaleFactor + 50 * scaleFactor) {
+    isHovering = true;
+  }
+
+  // Check LinkedIn icon hover
+  if (mouseX >= 1200 * scaleFactor && 
+      mouseX <= 1200 * scaleFactor + 60 * scaleFactor &&
+      mouseY >= 1045 * scaleFactor && 
+      mouseY <= 1045 * scaleFactor + 60 * scaleFactor) {
+    isHovering = true;
+  }
+  
+  // Check GitHub icon hover
+  if (mouseX >= 1270 * scaleFactor && 
+      mouseX <= 1270 * scaleFactor + 60 * scaleFactor &&
+      mouseY >= 1040 * scaleFactor && 
+      mouseY <= 1040 * scaleFactor + 60 * scaleFactor) {
+    isHovering = true;
+  }
+  
+  // Check Instagram icon hover
+  if (mouseX >= 1340 * scaleFactor && 
+      mouseX <= 1340 * scaleFactor + 65 * scaleFactor &&
+      mouseY >= 1044 * scaleFactor && 
+      mouseY <= 1044 * scaleFactor + 65 * scaleFactor) {
+    isHovering = true;
+  }
+
+  // Check menu panel icons hover
+  if (menuActive && window.menuIcons) {
+    for (let icon of window.menuIcons) {
+      if (mouseX >= icon.x &&
+          mouseX <= icon.x + icon.w &&
+          mouseY >= icon.y &&
+          mouseY <= icon.y + icon.h) {
+        isHovering = true;
+        break;
+      }
+    }
+  }
+
+  // Check menu items hover
+  if (menuActive && window.menuItems) {
+    for (let item of window.menuItems) {
+      if (item.bounds &&
+          mouseX >= item.bounds.x &&
+          mouseX <= item.bounds.x + item.bounds.w &&
+          mouseY >= item.bounds.y &&
+          mouseY <= item.bounds.y + item.bounds.h) {
+        isHovering = true;
+        break;
+      }
+    }
+  }
+
+  // Set cursor based on hover state
+  if (isHovering) {
+    cursor(HAND);
+  } else {
+    cursor(ARROW);
+  } 
+
     animRadius = lerp(animRadius, targetRadius, 0.15);
   if (animRadius > 1) {
     drawSpotlightOverlay(animRadius);
@@ -385,7 +465,7 @@ function drawMenuPanel() {
     y: iconY,
     w: iconSize,
     h: iconSize,
-    link: 'https://github.com/yourusername' // Replace with your GitHub URL
+    link: 'https://ajdesignb.github.io/AJ-Github/' 
   });
   iconX += iconSpacing;
 
@@ -437,6 +517,15 @@ function mousePressed() {
       mouseY >= 1045 * scaleFactor && 
       mouseY <= 1045 * scaleFactor + 60 * scaleFactor) {
     window.open('https://www.linkedin.com/in/aashi-jain29/', '_blank');
+  }
+
+  // Check if clicking on GitHub icon
+  if (mouseX >= 1270 * scaleFactor && 
+      mouseX <= 1270 * scaleFactor + 60 * scaleFactor &&
+      mouseY >= 1040 * scaleFactor && 
+      mouseY <= 1040 * scaleFactor + 60 * scaleFactor) {
+    window.open('https://ajdesignb.github.io/AJ-Github/', '_blank');
+    return;
   }
   
   // Check if clicking on Instagram icon

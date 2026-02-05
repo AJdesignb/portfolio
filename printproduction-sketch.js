@@ -442,7 +442,7 @@ function drawMenuPanel() {
     y: iconY,
     w: iconSize,
     h: iconSize,
-    link: 'https://github.com/yourusername' // Replace with your GitHub URL
+    link: 'https://ajdesignb.github.io/AJ-Github/' 
   });
   iconX += iconSpacing;
 

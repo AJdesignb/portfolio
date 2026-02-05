@@ -4,7 +4,7 @@ let targetRadius = 0;
 let maxRadius;
 
 let scrollOffset = 0;
-let scrollSpeed = 1; // Adjust speed here (higher = faster)
+let scrollSpeed = 1; // speed here (higher = faster)
 let totalWidth = 0;
 
 let font;
@@ -223,6 +223,147 @@ function draw() {
     15 * scaleFactor, 
     1050 * scaleFactor
   );
+  
+   let isHovering = false;
+
+  // Check GitHub repo box hover
+  if (mouseX >= githubX &&
+      mouseX <= githubX + githubW &&
+      mouseY >= githubY &&
+      mouseY <= githubY + githubH) {
+    isHovering = true;
+  }
+
+  // Check HASTASHILP image hover
+  if (mouseX >= hsImgArea.x &&
+      mouseX <= hsImgArea.x + hsImgArea.w &&
+      mouseY >= hsImgArea.y &&
+      mouseY <= hsImgArea.y + hsImgArea.h) {
+    isHovering = true;
+  }
+
+  // Check HASTASHILP title hover
+  if (mouseX >= hsTitleArea.x &&
+      mouseX <= hsTitleArea.x + hsTitleArea.w &&
+      mouseY >= hsTitleArea.y &&
+      mouseY <= hsTitleArea.y + hsTitleArea.h) {
+    isHovering = true;
+  }
+
+  // Check HOSHRUBA image hover
+  if (mouseX >= hoshImgArea.x &&
+      mouseX <= hoshImgArea.x + hoshImgArea.w &&
+      mouseY >= hoshImgArea.y &&
+      mouseY <= hoshImgArea.y + hoshImgArea.h) {
+    isHovering = true;
+  }
+
+  // Check HOSHRUBA title hover
+  if (mouseX >= hoshTitleArea.x &&
+      mouseX <= hoshTitleArea.x + hoshTitleArea.w &&
+      mouseY >= hoshTitleArea.y &&
+      mouseY <= hoshTitleArea.y + hoshTitleArea.h) {
+    isHovering = true;
+  }
+
+  // Check DAREDEVIL image hover
+  if (mouseX >= ddImgArea.x &&
+      mouseX <= ddImgArea.x + ddImgArea.w &&
+      mouseY >= ddImgArea.y &&
+      mouseY <= ddImgArea.y + ddImgArea.h) {
+    isHovering = true;
+  }
+
+  // Check DAREDEVIL title hover
+  if (mouseX >= ddTitleArea.x &&
+      mouseX <= ddTitleArea.x + ddTitleArea.w &&
+      mouseY >= ddTitleArea.y &&
+      mouseY <= ddTitleArea.y + ddTitleArea.h) {
+    isHovering = true;
+  }
+
+  // Check PRINT PRODUCTION image hover
+  if (mouseX >= ppImgArea.x &&
+      mouseX <= ppImgArea.x + ppImgArea.w &&
+      mouseY >= ppImgArea.y &&
+      mouseY <= ppImgArea.y + ppImgArea.h) {
+    isHovering = true;
+  }
+
+  // Check PRINT PRODUCTION title hover
+  if (mouseX >= ppTitleArea.x &&
+      mouseX <= ppTitleArea.x + ppTitleArea.w &&
+      mouseY >= ppTitleArea.y &&
+      mouseY <= ppTitleArea.y + ppTitleArea.h) {
+    isHovering = true;
+  }
+
+  // Check Mercedes Benz image hover
+  if (mouseX >= MBimgArea.x &&
+      mouseX <= MBimgArea.x + MBimgArea.w &&
+      mouseY >= MBimgArea.y &&
+      mouseY <= MBimgArea.y + MBimgArea.h) {
+    isHovering = true;
+  }
+
+  // Check Mercedes Benz title hover
+  if (mouseX >= bbTitleArea.x &&
+      mouseX <= bbTitleArea.x + bbTitleArea.w &&
+      mouseY >= bbTitleArea.y &&
+      mouseY <= bbTitleArea.y + bbTitleArea.h) {
+    isHovering = true;
+  }
+
+  // Check LinkedIn icon hover
+  if (mouseX >= 1200 * scaleFactor && 
+      mouseX <= 1200 * scaleFactor + 60 * scaleFactor &&
+      mouseY >= 1045 * scaleFactor && 
+      mouseY <= 1045 * scaleFactor + 60 * scaleFactor) {
+    isHovering = true;
+  }
+  
+  // Check Instagram icon hover
+  if (mouseX >= 1340 * scaleFactor && 
+      mouseX <= 1340 * scaleFactor + 65 * scaleFactor &&
+      mouseY >= 1044 * scaleFactor && 
+      mouseY <= 1044 * scaleFactor + 65 * scaleFactor) {
+    isHovering = true;
+  }
+
+  // Check menu panel icons hover
+  if (menuActive && window.menuIcons) {
+    for (let icon of window.menuIcons) {
+      if (mouseX >= icon.x &&
+          mouseX <= icon.x + icon.w &&
+          mouseY >= icon.y &&
+          mouseY <= icon.y + icon.h) {
+        isHovering = true;
+        break;
+      }
+    }
+  }
+
+  // Check menu items hover
+  if (menuActive && window.menuItems) {
+    for (let item of window.menuItems) {
+      if (item.bounds &&
+          mouseX >= item.bounds.x &&
+          mouseX <= item.bounds.x + item.bounds.w &&
+          mouseY >= item.bounds.y &&
+          mouseY <= item.bounds.y + item.bounds.h) {
+        isHovering = true;
+        break;
+      }
+    }
+  }
+
+  // Set cursor based on hover state
+  if (isHovering) {
+    cursor(HAND);
+  } else {
+    cursor(ARROW);
+  }
+  // END CURSOR MANAGEMENT
 
   animRadius = lerp(animRadius, targetRadius, 0.15);
   if (animRadius > 1) {
@@ -742,7 +883,7 @@ function drawMenuPanel() {
     y: iconY,
     w: iconSize,
     h: iconSize,
-    link: 'https://github.com/yourusername' // Replace with your GitHub URL
+    link: 'https://ajdesignb.github.io/AJ-Github/' 
   });
   iconX += iconSpacing;
 
@@ -760,6 +901,20 @@ function drawMenuPanel() {
 }
 
 function mousePressed() {
+  // GITHUB REPO LINK
+  let githubX = 10 * scaleFactor;
+  let githubY = 1027 * scaleFactor;
+  let githubW = 1580 * scaleFactor;
+  let githubH = 60 * scaleFactor;
+  
+  if (mouseX >= githubX &&
+      mouseX <= githubX + githubW &&
+      mouseY >= githubY &&
+      mouseY <= githubY + githubH) {
+    window.open('https://ajdesignb.github.io/AJ-Github/', '_blank');
+    return;
+  }
+
   // HASTASHILP
   if (
     mouseX >= hsImgArea.x &&
@@ -851,7 +1006,7 @@ function mousePressed() {
     mouseY >= MBimgArea.y &&
     mouseY <= MBimgArea.y + MBimgArea.h
   ) {
-    window.location.href = "mercedesbens.html";  // Add your link here
+    window.location.href = "mercedesbens.html";
     return;
   }
 
@@ -861,28 +1016,29 @@ function mousePressed() {
     mouseY >= bbTitleArea.y &&
     mouseY <= bbTitleArea.y + bbTitleArea.h
   ) {
-    window.location.href = "mercedesbens.html";  // Add your link here
+    window.location.href = "mercedesbens.html";
     return;
   }
 
- // SKILL WORDS
- for (const word of skillWords) {
-  if (word.link && word.displayX !== undefined &&
-      mouseX >= word.displayX &&
-      mouseX <= word.displayX + word.w &&
-      mouseY >= word.displayY &&
-      mouseY <= word.displayY + word.h) {
-    window.location.href = word.link;
-    return;
+  // SKILL WORDS
+  for (const word of skillWords) {
+    if (word.link && word.displayX !== undefined &&
+        mouseX >= word.displayX &&
+        mouseX <= word.displayX + word.w &&
+        mouseY >= word.displayY &&
+        mouseY <= word.displayY + word.h) {
+      window.location.href = word.link;
+      return;
+    }
   }
- }
 
- //check if clicking linkedIn icon
+  // Check if clicking LinkedIn icon
   if (mouseX >= 1200 * scaleFactor && 
       mouseX <= 1200 * scaleFactor + 60 * scaleFactor &&
       mouseY >= 1045 * scaleFactor && 
       mouseY <= 1045 * scaleFactor + 60 * scaleFactor) {
     window.open('https://www.linkedin.com/in/aashi-jain29/', '_blank');
+    return;
   }
   
   // Check if clicking on Instagram icon
@@ -891,6 +1047,7 @@ function mousePressed() {
       mouseY >= 1044 * scaleFactor && 
       mouseY <= 1044 * scaleFactor + 65 * scaleFactor) {
     window.open('https://www.instagram.com/aashij__', '_blank');
+    return;
   }
 
   // Check if clicking on menu panel icons
@@ -909,7 +1066,6 @@ function mousePressed() {
       }
     }
   }
-
 
   // MENU ITEM CLICKS
   if (menuActive && window.menuItems) {
