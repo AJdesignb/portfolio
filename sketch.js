@@ -651,7 +651,7 @@ function drawProject5() {
   textSize(72 * scaleFactor);
   let titleX = 880 * scaleFactor;
   let titleY = 3680 * scaleFactor;
-  let titleText = "Mercedes Bens R&D";
+  let titleText = "Mercedes Benz R&D";
 
   let titleW = textWidth(titleText);
   let titleH = 72 * scaleFactor * 1.1;
