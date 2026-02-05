@@ -105,7 +105,7 @@ function draw() {
   textSize(120 * scaleFactor);
   fill(248, 244, 236);
   textAlign(LEFT, TOP);
-  text("Mercedes Bens R&D India", 50 * scaleFactor, 100 * scaleFactor);
+  text("Mercedes Benz R&D India", 50 * scaleFactor, 100 * scaleFactor);
 
   // Subtitle
   textFont(fontB);
