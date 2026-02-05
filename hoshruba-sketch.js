@@ -361,9 +361,9 @@ function drawSpotlightOverlay(radius) {
 
 function drawMenuPanel() {
   const items = [
-    { text: "HOME", link: null },
+    { text: "HOME", link: "index.html" },
     { text: "Illustrations", link: null },
-    { text: "Let's Connect", link: null }
+    { text: "Let's Connect", link: "contact.html" }
   ];
 
   const h = min(windowHeight, height);
