@@ -11,7 +11,7 @@ const STAR_COUNT = 600;
 
 let scaleFactor = 1;
 let canvasWidth = 1600;
-let canvasHeight = 7000;
+let canvasHeight = 6000;
 
 let Hoshimg;
 let HoshimgB;
@@ -76,7 +76,7 @@ function setup() {
 
 function calculateCanvasSize() {
   const baseWidth = 1600;
-  const baseHeight = 7000;
+  const baseHeight = 6000;
   
   if (windowWidth < 768) {
     scaleFactor = 0.4;

@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Aashi Portfolio – Moments App</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <!-- Top bar -->
+    <header class="site-header">
+      <a href="index.html" class="logo" style="text-decoration: none; color: #0f0f10;">AJM</a>
+
+      <div class="header-right">
+        <a href="contact.html" class="tagline" style="text-decoration: none; color: #0f0f10;">About me</a>
+
+      <!-- Menu button in header -->
+      <div class="menu-btn" id="menuBtn">
+        <div class="line"></div>
+        <div class="line"></div>
+        <div class="line"></div>
+      </div>
+    </header>
+
+    <!-- Main content with p5 canvas centered -->
+    <main class="canvas-section">
+      <div class="canvas-frame">
+        <!-- p5 will inject the <canvas> element here -->
+      </div>
+    </main>
+
+    <!-- p5 library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
+    <!-- daredevil sketch -->
+    <script src="moments-app.js"></script>
+  </body>
+</html>

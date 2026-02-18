@@ -16,6 +16,8 @@ let Hoshimg;
 let DDimg;
 let PPimg;
 let MBimg;
+let BCimg;
+let MAimg;
 
 let bgimg;
 let Starimg;
@@ -27,11 +29,17 @@ let Insta;
 let skillWords = [];
 let SKILL_TEXT_SIZE = 96;
 
+const balancingLink = "balancingconnections.html";
+const momentsLink = "momentsapp.html";
 const projectLink = "hastashilp.html";
 const hoshLink = "hoshruba.html";
 const daredevilLink = "daredevil.html";
 const printLink = "printproduction.html";
 
+let bcImgArea = {};
+let bcTitleArea = {};
+let momentsImgArea = {};
+let momentsTitleArea = {};
 let hsImgArea = {};
 let hsTitleArea = {};
 let hoshImgArea = {};
@@ -48,13 +56,15 @@ const STAR_COUNT = 600;
 
 let scaleFactor = 1;
 let canvasWidth = 1600;
-let canvasHeight = 5000;
+let canvasHeight = 5850;
 
 function preload() {
   font = loadFont("Rosean.ttf");
   fontB = loadFont("Coolvetica Rg.otf");
   fontC = loadFont("Courier New.ttf");
   fontCB = loadFont("Courier New Bold.ttf");
+  BCimg = loadImage("BCimg.png");
+  MAimg = loadImage("MAimg.png")
   HSimg = loadImage("HSimg.png");
   Hoshimg = loadImage("Hoshimg.png");
   DDimg = loadImage("DDimg.png");
@@ -94,7 +104,7 @@ function setup() {
 
 function calculateCanvasSize() {
   const baseWidth = 1600;
-  const baseHeight = 5000;
+  const baseHeight = 5850;
   
   if (windowWidth < 768) {
     scaleFactor = 0.4;
@@ -188,6 +198,8 @@ function draw() {
   image(Starimg, 910 * scaleFactor, 135 * scaleFactor, 130 * scaleFactor, 130 * scaleFactor);
 
   drawSkillWords();
+  drawBalancingConnections();  
+  drawMomentsApp();
   drawProject1();
   drawProject2();
   drawProject3();
@@ -233,6 +245,38 @@ function draw() {
       mouseY <= githubY + githubH) {
     isHovering = true;
   }
+
+  // Check BALANCING CONNECTIONS image hover
+if (mouseX >= bcImgArea.x &&
+    mouseX <= bcImgArea.x + bcImgArea.w &&
+    mouseY >= bcImgArea.y &&
+    mouseY <= bcImgArea.y + bcImgArea.h) {
+  isHovering = true;
+}
+
+// Check BALANCING CONNECTIONS title hover
+if (mouseX >= bcTitleArea.x &&
+    mouseX <= bcTitleArea.x + bcTitleArea.w &&
+    mouseY >= bcTitleArea.y &&
+    mouseY <= bcTitleArea.y + bcTitleArea.h) {
+  isHovering = true;
+}
+
+  // Check MOMENTS APP image hover
+if (mouseX >= momentsImgArea.x &&
+    mouseX <= momentsImgArea.x + momentsImgArea.w &&
+    mouseY >= momentsImgArea.y &&
+    mouseY <= momentsImgArea.y + momentsImgArea.h) {
+  isHovering = true;
+}
+
+// Check MOMENTS APP title hover
+if (mouseX >= momentsTitleArea.x &&
+    mouseX <= momentsTitleArea.x + momentsTitleArea.w &&
+    mouseY >= momentsTitleArea.y &&
+    mouseY <= momentsTitleArea.y + momentsTitleArea.h) {
+  isHovering = true;
+}
 
   // Check HASTASHILP image hover
   if (mouseX >= hsImgArea.x &&
@@ -371,14 +415,152 @@ function draw() {
     if (animRadius > 40) drawMenuPanel();
   }
 
+}
 
+function drawBalancingConnections() {
+  bcImgArea = {
+    x: 90 * scaleFactor,
+    y: 1150 * scaleFactor,
+    w: 990 * scaleFactor,
+    h: 650 * scaleFactor
+  };
 
+  let bcHover =
+    mouseX >= bcImgArea.x &&
+    mouseX <= bcImgArea.x + bcImgArea.w &&
+    mouseY >= bcImgArea.y &&
+    mouseY <= bcImgArea.y + bcImgArea.h;
+
+  let bcScale = bcHover ? 1.05 : 1;
+  let bcW = bcImgArea.w * bcScale;
+  let bcH = bcImgArea.h * bcScale;
+  let bcX = bcImgArea.x - (bcW - bcImgArea.w) / 2;
+  let bcY = bcImgArea.y - (bcH - bcImgArea.h) / 2;
+
+  push();
+  fill(60);
+  stroke(234, 255, 151);
+  strokeWeight(2);
+  image(BCimg, bcX, bcY, bcW, bcH);
+  pop();
+
+  textFont(font);
+  textSize(72 * scaleFactor);
+  let titleX = 880 * scaleFactor;
+  let titleY = 1190 * scaleFactor;
+  let titleText = "BALANCING CONNECTIONS";
+
+  let titleW = textWidth(titleText);
+  let titleH = 72 * scaleFactor * 1.1;
+
+  bcTitleArea = { x: titleX, y: titleY, w: titleW, h: titleH };
+
+  if (
+    mouseX >= titleX &&
+    mouseX <= titleX + titleW &&
+    mouseY >= titleY &&
+    mouseY <= titleY + titleH
+  ) {
+    fill(234, 255, 151);
+  } else {
+    fill(248, 244, 236);
+  }
+
+  text(titleText, titleX, titleY);
+
+  textSize(30 * scaleFactor);
+  textFont(fontB);
+  fill(248, 244, 236);
+  text("Designing Playful Interactions", 880 * scaleFactor, 1250 * scaleFactor);
+
+  textSize(21 * scaleFactor);
+  text(
+    "This project applies human-centered design principles to address social isolation among international students in campus quads. Research uncovered a disconnect between shared space and shared experience, where newcomers lacked accessible entry points into existing social ecosystems.\n\n Discover the design process behind an intervention that integrates spatial systems and intentional interaction cues to foster low-pressure engagement and organic peer connection.",
+    880 * scaleFactor,
+    1250 * scaleFactor,
+    500 * scaleFactor,
+    400 * scaleFactor
+  );
+}
+
+function drawMomentsApp() {
+  // Image on the right side
+  momentsImgArea = {
+    x: 540 * scaleFactor,
+    y: 1850 * scaleFactor,
+    w: 1100 * scaleFactor,
+    h: 700 * scaleFactor
+  };
+
+  let momentsHover =
+    mouseX >= momentsImgArea.x &&
+    mouseX <= momentsImgArea.x + momentsImgArea.w &&
+    mouseY >= momentsImgArea.y &&
+    mouseY <= momentsImgArea.y + momentsImgArea.h;
+
+  let momentsScale = momentsHover ? 1.05 : 1;
+  let momentsW = momentsImgArea.w * momentsScale;
+  let momentsH = momentsImgArea.h * momentsScale;
+  let momentsX = momentsImgArea.x - (momentsW - momentsImgArea.w) / 2;
+  let momentsY = momentsImgArea.y - (momentsH - momentsImgArea.h) / 2;
+
+  push();
+  fill(60);
+  stroke(234, 255, 151);
+  strokeWeight(2);
+  image(MAimg, momentsX, momentsY, momentsW, momentsH);
+  pop();
+
+  // Text on the left side
+  textFont(font);
+  textSize(72 * scaleFactor);
+
+  let titleX = 180 * scaleFactor;
+  let titleY = 1900 * scaleFactor;
+  let titleText = "MOMENTS APP";
+
+  let titleW = textWidth(titleText);
+  let titleH = 72 * scaleFactor * 1.1;
+
+  momentsTitleArea = {
+    x: titleX,
+    y: titleY,
+    w: titleW,
+    h: titleH
+  };
+
+  if (
+    mouseX >= titleX &&
+    mouseX <= titleX + titleW &&
+    mouseY >= titleY &&
+    mouseY <= titleY + titleH
+  ) {
+    fill(234, 255, 151);
+  } else {
+    fill(248, 244, 236);
+  }
+
+  text(titleText, titleX, titleY);
+
+  textSize(30 * scaleFactor);
+  textFont(fontB);
+  fill(248, 244, 236);
+  text("AI-Driven Preventive Wellness", 180 * scaleFactor, 1960 * scaleFactor);
+
+  textSize(20 * scaleFactor);
+  text(
+    "This project explores how artificial intelligence and design can promote longer, healthier lives through prevention. Moments is an interactive app concept that reframes digital distraction as an opportunity for mindfulness and emotional resilience.\n\n The entire project was developed using AI as the primary research and design engine, from insight generation to concept structuring and behavioral pattern analysis. Our role as a team was to strategically craft prompts, guide direction, and critically evaluate outputs, demonstrating how human intention combined with AI capability can shape meaningful preventive wellness solutions.",
+    180 * scaleFactor,
+    1980 * scaleFactor,
+    500 * scaleFactor,
+    400 * scaleFactor
+  );
 }
 
 function drawProject1() {
   hsImgArea = {
     x: 90 * scaleFactor,
-    y: 1150 * scaleFactor,
+    y: 2680 * scaleFactor,  
     w: 800 * scaleFactor,
     h: 600 * scaleFactor
   };
@@ -400,7 +582,7 @@ function drawProject1() {
   textFont(font);
   textSize(72 * scaleFactor);
   let titleX = 880 * scaleFactor;
-  let titleY = 1190 * scaleFactor;
+  let titleY = 2720 * scaleFactor;  
   let titleText = "HASTASHILP";
 
   let titleW = textWidth(titleText);
@@ -424,13 +606,13 @@ function drawProject1() {
   textSize(30 * scaleFactor);
   textFont(fontB);
   fill(248, 244, 236);
-  text("Handicrafts of India (Card Game Design)", 880 * scaleFactor, 1250 * scaleFactor);
+  text("Handicrafts of India (Card Game Design)", 880 * scaleFactor, 2780 * scaleFactor);  
 
   textSize(21 * scaleFactor);
   text(
     "The project focuses on raising awareness about the many traditional crafts that surround us. According to Handmade in India (NID, 2005), India is home to nearly 516 distinct handicrafts, yet most of us can barely name even twenty.\n\nThis game is designed for young adults and above, using learning through play to spark curiosity and build cultural understanding. By engaging players, the game encourages a deeper appreciation of the diverse crafts of India and helps reconnect people with their own cultural heritage",
     880 * scaleFactor,
-    1260 * scaleFactor,
+    2790 * scaleFactor,  
     500 * scaleFactor,
     400 * scaleFactor
   );
@@ -439,7 +621,7 @@ function drawProject1() {
 function drawProject2() {
   hoshImgArea = {
     x: 650 * scaleFactor,
-    y: 1480 * scaleFactor,
+    y: 3010 * scaleFactor,  
     w: 800 * scaleFactor,
     h: 900 * scaleFactor
   };
@@ -462,7 +644,7 @@ function drawProject2() {
   textSize(72 * scaleFactor);
 
   let hTitleX = 180 * scaleFactor;
-  let hTitleY = 1830 * scaleFactor;
+  let hTitleY = 3360 * scaleFactor;  
   let hTitleText = "Angry God's Dilemma";
 
   let hTitleW = textWidth(hTitleText);
@@ -491,13 +673,13 @@ function drawProject2() {
   textSize(30 * scaleFactor);
   textFont(fontB);
   fill(248, 244, 236);
-  text("Tilism e- Hoshruba", 180 * scaleFactor, 1890 * scaleFactor);
+  text("Tilism e- Hoshruba", 180 * scaleFactor, 3420 * scaleFactor);  
 
   textSize(20 * scaleFactor);
   text(
     "This project adapts magical excerpts from Tilism-e-Hoshruba to explore how its fictional world reflects issues in our real one. Inspired by Amar Ayyar's Zambil trickery where he disguises himself to deceive others—the work draws parallels to how people today often hide their true identities to appear socially acceptable.\n\nThrough this reinterpretation, the project raises questions about gender stereotypes, individuality, self-view, and self-acceptance. By using the story's aesthetic, magic, and narrative twists, it aims to creatively highlight contemporary social crises and encourage readers to reflect on their own identities.",
     180 * scaleFactor,
-    1910 * scaleFactor,
+    3440 * scaleFactor,  
     500 * scaleFactor,
     400 * scaleFactor
   );
@@ -506,7 +688,7 @@ function drawProject2() {
 function drawProject3() {
   ddImgArea = {
     x: 0 * scaleFactor,
-    y: 2260 * scaleFactor,
+    y: 3790 * scaleFactor,  
     w: 1060 * scaleFactor,
     h: 730 * scaleFactor
   };
@@ -528,7 +710,7 @@ function drawProject3() {
   textFont(font);
   textSize(72 * scaleFactor);
   let titleX = 880 * scaleFactor;
-  let titleY = 2450 * scaleFactor;
+  let titleY = 3980 * scaleFactor;  // Changed from 2450
   let titleText = "DAREDEVIL Brewing Co.";
 
   let titleW = textWidth(titleText);
@@ -552,13 +734,13 @@ function drawProject3() {
   textSize(30 * scaleFactor);
   textFont(fontB);
   fill(248, 244, 236);
-  text("Branding Exploration", 880 * scaleFactor, 2510 * scaleFactor);
+  text("Branding Exploration", 880 * scaleFactor, 4040 * scaleFactor);  
 
   textSize(21 * scaleFactor);
   text(
     "A creative exploration of beer branding through \n bold visual identity and packaging design. \n\n This project reimagines the Daredevil brand \n with a focus on striking aesthetics and \n memorable consumer experience.",
     880 * scaleFactor,
-    2440 * scaleFactor,
+    3970 * scaleFactor,  
     500 * scaleFactor,
     400 * scaleFactor
   );
@@ -567,7 +749,7 @@ function drawProject3() {
 function drawProject4() {
   ppImgArea = {
     x: 630 * scaleFactor,
-    y: 2790 * scaleFactor,
+    y: 4320 * scaleFactor,  
     w: 920 * scaleFactor,
     h: 820 * scaleFactor
   };
@@ -589,7 +771,7 @@ function drawProject4() {
   textFont(font);
   textSize(72 * scaleFactor);
   let titleX = 180 * scaleFactor;
-  let titleY = 3010 * scaleFactor;
+  let titleY = 4540 * scaleFactor;  
   let titleText = "PRINT PRODUCTION";
 
   let titleW = textWidth(titleText);
@@ -613,13 +795,13 @@ function drawProject4() {
   textSize(30 * scaleFactor);
   textFont(fontB);
   fill(248, 244, 236);
-  text("Print & Production Design", 180 * scaleFactor, 3070 * scaleFactor);
+  text("Print & Production Design", 180 * scaleFactor, 4600 * scaleFactor);  
 
   textSize(20 * scaleFactor);
   text(
     "Exploring the intersection of digital design and physical production. This project showcases expertise in print design, production workflows, and bringing creative visions to life through tangible mediums. \n\n Print Production is a research-led publication documenting an on-ground study of print production in Bangalore. The project focuses on Sultan Pet and Cotton Pet—areas known for their dense network of print workshops and production units.\n\n The final output is a printed book combining written reflections, visual documentation, and physical print samples collected during the research.",
     180 * scaleFactor,
-    3105 * scaleFactor,
+    4635 * scaleFactor,  
     500 * scaleFactor,
     400 * scaleFactor
   );
@@ -628,7 +810,7 @@ function drawProject4() {
 function drawProject5() {
   MBimgArea = {
     x: 280 * scaleFactor,
-    y: 3570 * scaleFactor,
+    y: 5100 * scaleFactor,  // Changed from 3570
     w: 500 * scaleFactor,
     h: 800 * scaleFactor,
   };
@@ -650,7 +832,7 @@ function drawProject5() {
   textFont(font);
   textSize(72 * scaleFactor);
   let titleX = 880 * scaleFactor;
-  let titleY = 3680 * scaleFactor;
+  let titleY = 5210 * scaleFactor;  // Changed from 3680
   let titleText = "Mercedes Benz R&D";
 
   let titleW = textWidth(titleText);
@@ -674,13 +856,13 @@ function drawProject5() {
   textSize(30 * scaleFactor);
   textFont(fontB);
   fill(248, 244, 236);
-  text("Concept Presentation", 880 * scaleFactor, 3740 * scaleFactor);
+  text("Concept Presentation", 880 * scaleFactor, 5270 * scaleFactor);  // Changed from 3740
 
   textSize(21 * scaleFactor);
   text(
     "This project reimagines the Mercedes-AMG Track Pace App through a product and interaction design lens, exploring how racing data can be experienced rather than simply viewed. The concept focuses on designing intuitive interactions that allow users to relive race highlights while capturing the emotional context behind each moment.\n\n By borrowing interaction patterns from reels, flash stories, and social feeds, the experience turns performance metrics into dynamic, shareable narratives enhancing engagement, emotional connection, and overall user experience.",
     880 * scaleFactor,
-    3760 * scaleFactor,
+    5290 * scaleFactor,  // Changed from 3760
     500 * scaleFactor,
     400 * scaleFactor
   );
@@ -914,6 +1096,48 @@ function mousePressed() {
     window.open('https://ajdesignb.github.io/AJ-Github/', '_blank');
     return;
   }
+
+  // BALANCING CONNECTIONS
+if (
+  mouseX >= bcImgArea.x &&
+  mouseX <= bcImgArea.x + bcImgArea.w &&
+  mouseY >= bcImgArea.y &&
+  mouseY <= bcImgArea.y + bcImgArea.h
+) {
+  window.location.href = balancingLink;
+  return;
+}
+
+if (
+  mouseX >= bcTitleArea.x &&
+  mouseX <= bcTitleArea.x + bcTitleArea.w &&
+  mouseY >= bcTitleArea.y &&
+  mouseY <= bcTitleArea.y + bcTitleArea.h
+) {
+  window.location.href = balancingLink;
+  return;
+}
+
+  // MOMENTS APP
+if (
+  mouseX >= momentsImgArea.x &&
+  mouseX <= momentsImgArea.x + momentsImgArea.w &&
+  mouseY >= momentsImgArea.y &&
+  mouseY <= momentsImgArea.y + momentsImgArea.h
+) {
+  window.location.href = momentsLink;
+  return;
+}
+
+if (
+  mouseX >= momentsTitleArea.x &&
+  mouseX <= momentsTitleArea.x + momentsTitleArea.w &&
+  mouseY >= momentsTitleArea.y &&
+  mouseY <= momentsTitleArea.y + momentsTitleArea.h
+) {
+  window.location.href = momentsLink;
+  return;
+}
 
   // HASTASHILP
   if (
