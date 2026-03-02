@@ -5,7 +5,7 @@ Welcome to my collection of coding experiments, projects, and technical explorat
 Each project here represents a learning opportunity, a technical challenge, or simply an idea I wanted to bring to life. Feel free to explore, learn from, or build upon anything you find useful.
 
 ### 1. [THE BIRDY GAME](https://ajdesignb.github.io/AJ-Github/TheBirdyProject/index.html)
-**[Link to my Code](https://github.com/AJdesignb/MM621_F25/tree/main/project_1_Birdy)**
+**[Link to my Code](https://github.com/AJdesignb/MM621_F25/tree/main/TheBirdyProject)**
 
 ## About the Game
 An exploration of randomness through interactive gameplay—my own somewhat broken version of Flappy Bird.
@@ -16,7 +16,7 @@ The experience features randomized pipe heights, spacing, and timing that create
 
 **Note:** This is one of my early explorations in interactive design and game development. As I'm still learning, this version intentionally retains its quirks and "broken" elements as part of the creative process.
 
-### 2. [CHARACTER RANDOMISER](https://ajdesignb.github.io/MM621_F25/Assignments/attempt%202/index.html)
+### 2. [CHARACTER RANDOMISER](https://ajdesignb.github.io/AJ-Github/Assignments/attempt%202/index.html)
 **[Link to my code](https://github.com/AJdesignb/MM621_F25/tree/main/Assignments/attempt%202)**
 
 ## About the Project
@@ -27,7 +27,7 @@ This project explores the creative potential of randomness in visual design, uti
 
 Built as an exercise in combining graphics with interactive functionality, the randomizer showcases how simple user input can unlock endless variations, transforming a static character into a living, evolving creation with each interaction.
 
-### 3. [Mini Data Viz](https://ajdesignb.github.io/MM621_F25/Mini_DataViz_Assingment/index.html) using Pantry Data & CSV Files
+### 3. [Mini Data Viz](https://ajdesignb.github.io/AJ-Github/Mini_DataViz_Assingment/index.html) using Pantry Data & CSV Files
 **[Link to my code](https://github.com/AJdesignb/MM621_F25/tree/main/Mini_DataViz_Assingment)**
 
 A hands-on dive into data visualization using real-world pantry food items and their nutritional information.
