@@ -27,6 +27,8 @@ let LinkdIn;
 let GitHb;
 let Insta;
 
+let IllusR;
+
 let skillWords = [];
 let SKILL_TEXT_SIZE = 96;
 
@@ -60,7 +62,7 @@ const STAR_COUNT = 600;
 
 let scaleFactor = 1;
 let canvasWidth = 1600;
-let canvasHeight = 6750;
+let canvasHeight = 7170;
 
 function preload() {
   font = loadFont("Rosean.ttf");
@@ -81,6 +83,7 @@ function preload() {
   LinkdIn = loadImage("Linkdin.png");
   GitHb = loadImage("GhubL.png");
   Insta = loadImage("Insta.png");
+  IllusR = loadImage("IllusR.png");
 }
 
 function setup() {
@@ -109,7 +112,7 @@ function setup() {
 
 function calculateCanvasSize() {
   const baseWidth = 1600;
-  const baseHeight = 6750;
+  const baseHeight = 7170;
   
   if (windowWidth < 768) {
     scaleFactor = 0.4;
@@ -355,6 +358,14 @@ function draw() {
     }
   }
 
+  image(
+    IllusR,
+    0 * scaleFactor,
+    6520 * scaleFactor, 
+    1600 * scaleFactor, 
+    650 * scaleFactor
+  );
+
   cursor(isHovering ? HAND : ARROW);
 
   animRadius = lerp(animRadius, targetRadius, 0.15);
@@ -362,6 +373,7 @@ function draw() {
     drawSpotlightOverlay(animRadius);
     if (animRadius > 40) drawMenuPanel();
   }
+
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -422,10 +434,10 @@ function drawBalancingConnections() {
 
 function drawMomentsApp() {
   momentsImgArea = {
-    x: 540 * scaleFactor,
-    y: 1850 * scaleFactor,
-    w: 1100 * scaleFactor,
-    h: 700 * scaleFactor
+    x: 600 * scaleFactor,
+    y: 1780 * scaleFactor,
+    w: 1000 * scaleFactor,
+    h: 600 * scaleFactor
   };
 
   let momentsHover =
@@ -475,9 +487,9 @@ function drawMomentsApp() {
 function drawSoundAid() {
   saImgArea = {
     x: -100 * scaleFactor,
-    y: 2580 * scaleFactor,
-    w: 1400 * scaleFactor,
-    h: 900 * scaleFactor
+    y: 2380 * scaleFactor,
+    w: 1200 * scaleFactor,
+    h: 700 * scaleFactor
   };
 
   let saHover =
@@ -499,7 +511,7 @@ function drawSoundAid() {
   textFont(font);
   textSize(72 * scaleFactor);
   let titleX = 880 * scaleFactor;
-  let titleY = 2720 * scaleFactor;
+  let titleY = 2550 * scaleFactor;
   let titleText = "SOUND AID";
   let titleW = textWidth(titleText);
   let titleH = 72 * scaleFactor * 1.1;
@@ -514,12 +526,12 @@ function drawSoundAid() {
   textSize(30 * scaleFactor);
   textFont(fontB);
   fill(248, 244, 236);
-  text("Designing for Accessibility Through Sound", 880 * scaleFactor, 2780 * scaleFactor);
+  text("Designing for Accessibility Through Sound", 880 * scaleFactor, 2610 * scaleFactor);
 
   textSize(21 * scaleFactor);
   text(
     "SoundAid explores how sound-based interactions can support individuals with visual impairments or cognitive load challenges in navigating complex environments.\n\nThrough iterative research, prototyping, and user testing, the project investigates the intersection of auditory feedback design and inclusive UX.",
-    880 * scaleFactor, 2720 * scaleFactor, 500 * scaleFactor, 400 * scaleFactor
+    880 * scaleFactor, 2560 * scaleFactor, 500 * scaleFactor, 400 * scaleFactor
   );
 }
 
@@ -527,9 +539,9 @@ function drawProject1() {
   // HASTASHILP
   hsImgArea = {
     x: 90 * scaleFactor,
-    y: 3580 * scaleFactor,
-    w: 800 * scaleFactor,
-    h: 600 * scaleFactor
+    y: 3180 * scaleFactor,
+    w: 750 * scaleFactor,
+    h: 550 * scaleFactor
   };
 
   let hsHover =
@@ -547,7 +559,7 @@ function drawProject1() {
   textFont(font);
   textSize(72 * scaleFactor);
   let titleX = 880 * scaleFactor;
-  let titleY = 3620 * scaleFactor;
+  let titleY = 3250 * scaleFactor;
   let titleText = "HASTASHILP";
   let titleW = textWidth(titleText);
   let titleH = 72 * scaleFactor * 1.1;
@@ -562,20 +574,20 @@ function drawProject1() {
   textSize(30 * scaleFactor);
   textFont(fontB);
   fill(248, 244, 236);
-  text("Handicrafts of India (Card Game Design)", 880 * scaleFactor, 3680 * scaleFactor);
+  text("Handicrafts of India (Card Game Design)", 880 * scaleFactor, 3310 * scaleFactor);
 
   textSize(21 * scaleFactor);
   text(
     "The project focuses on raising awareness about the many traditional crafts that surround us. According to Handmade in India (NID, 2005), India is home to nearly 516 distinct handicrafts, yet most of us can barely name even twenty.\n\nThis game is designed for young adults and above, using learning through play to spark curiosity and build cultural understanding. By engaging players, the game encourages a deeper appreciation of the diverse crafts of India and helps reconnect people with their own cultural heritage",
-    880 * scaleFactor, 3690 * scaleFactor, 500 * scaleFactor, 400 * scaleFactor
+    880 * scaleFactor, 3330 * scaleFactor, 500 * scaleFactor, 400 * scaleFactor
   );
 }
 
 function drawProject2() {
   // HOSHRUBA
   hoshImgArea = {
-    x: 650 * scaleFactor,
-    y: 3910 * scaleFactor,
+    x: 700 * scaleFactor,
+    y: 3600 * scaleFactor,
     w: 800 * scaleFactor,
     h: 900 * scaleFactor
   };
@@ -595,7 +607,7 @@ function drawProject2() {
   textFont(font);
   textSize(72 * scaleFactor);
   let hTitleX = 180 * scaleFactor;
-  let hTitleY = 4260 * scaleFactor;
+  let hTitleY = 3930 * scaleFactor;
   let hTitleText = "Angry God's Dilemma";
   let hTitleW = textWidth(hTitleText);
   let hTitleH = 72 * scaleFactor * 1.1;
@@ -610,20 +622,20 @@ function drawProject2() {
   textSize(30 * scaleFactor);
   textFont(fontB);
   fill(248, 244, 236);
-  text("Tilism e- Hoshruba", 180 * scaleFactor, 4320 * scaleFactor);
+  text("Tilism e- Hoshruba", 180 * scaleFactor, 3990 * scaleFactor);
 
   textSize(20 * scaleFactor);
   text(
     "This project adapts magical excerpts from Tilism-e-Hoshruba to explore how its fictional world reflects issues in our real one. Inspired by Amar Ayyar's Zambil trickery where he disguises himself to deceive others—the work draws parallels to how people today often hide their true identities to appear socially acceptable.\n\nThrough this reinterpretation, the project raises questions about gender stereotypes, individuality, self-view, and self-acceptance. By using the story's aesthetic, magic, and narrative twists, it aims to creatively highlight contemporary social crises and encourage readers to reflect on their own identities.",
-    180 * scaleFactor, 4340 * scaleFactor, 500 * scaleFactor, 400 * scaleFactor
+    180 * scaleFactor, 4000 * scaleFactor, 500 * scaleFactor, 400 * scaleFactor
   );
 }
 
 function drawProject3() {
   // DAREDEVIL
   ddImgArea = {
-    x: 0 * scaleFactor,
-    y: 4690 * scaleFactor,
+    x: -40 * scaleFactor,
+    y: 4420 * scaleFactor,
     w: 1060 * scaleFactor,
     h: 730 * scaleFactor
   };
@@ -643,7 +655,7 @@ function drawProject3() {
   textFont(font);
   textSize(72 * scaleFactor);
   let titleX = 880 * scaleFactor;
-  let titleY = 4880 * scaleFactor;
+  let titleY = 4640 * scaleFactor;
   let titleText = "DAREDEVIL Brewing Co.";
   let titleW = textWidth(titleText);
   let titleH = 72 * scaleFactor * 1.1;
@@ -658,20 +670,20 @@ function drawProject3() {
   textSize(30 * scaleFactor);
   textFont(fontB);
   fill(248, 244, 236);
-  text("Branding Exploration", 880 * scaleFactor, 4940 * scaleFactor);
+  text("Branding Exploration", 880 * scaleFactor, 4700 * scaleFactor);
 
   textSize(21 * scaleFactor);
   text(
     "A creative exploration of beer branding through \n bold visual identity and packaging design. \n\n This project reimagines the Daredevil brand \n with a focus on striking aesthetics and \n memorable consumer experience.",
-    880 * scaleFactor, 4870 * scaleFactor, 500 * scaleFactor, 400 * scaleFactor
+    880 * scaleFactor, 4630 * scaleFactor, 500 * scaleFactor, 400 * scaleFactor
   );
 }
 
 function drawProject4() {
   // PRINT PRODUCTION
   ppImgArea = {
-    x: 630 * scaleFactor,
-    y: 5220 * scaleFactor,
+    x: 700 * scaleFactor,
+    y: 5100 * scaleFactor,
     w: 920 * scaleFactor,
     h: 820 * scaleFactor
   };
@@ -691,7 +703,7 @@ function drawProject4() {
   textFont(font);
   textSize(72 * scaleFactor);
   let titleX = 180 * scaleFactor;
-  let titleY = 5440 * scaleFactor;
+  let titleY = 5300 * scaleFactor;
   let titleText = "PRINT PRODUCTION";
   let titleW = textWidth(titleText);
   let titleH = 72 * scaleFactor * 1.1;
@@ -706,20 +718,20 @@ function drawProject4() {
   textSize(30 * scaleFactor);
   textFont(fontB);
   fill(248, 244, 236);
-  text("Print & Production Design", 180 * scaleFactor, 5500 * scaleFactor);
+  text("Print & Production Design", 180 * scaleFactor, 5360 * scaleFactor);
 
   textSize(20 * scaleFactor);
   text(
     "Exploring the intersection of digital design and physical production. This project showcases expertise in print design, production workflows, and bringing creative visions to life through tangible mediums. \n\n Print Production is a research-led publication documenting an on-ground study of print production in Bangalore. The project focuses on Sultan Pet and Cotton Pet—areas known for their dense network of print workshops and production units.\n\n The final output is a printed book combining written reflections, visual documentation, and physical print samples collected during the research.",
-    180 * scaleFactor, 5535 * scaleFactor, 500 * scaleFactor, 400 * scaleFactor
+    180 * scaleFactor, 5390 * scaleFactor, 500 * scaleFactor, 400 * scaleFactor
   );
 }
 
 function drawProject5() {
   // MERCEDES BENZ
   MBimgArea = {
-    x: 280 * scaleFactor,
-    y: 6000 * scaleFactor,
+    x: 270 * scaleFactor,
+    y: 5900 * scaleFactor,
     w: 500 * scaleFactor,
     h: 800 * scaleFactor,
   };
