@@ -10,6 +10,10 @@ let yellowFolderOffset = 0;
 let dblueFolderOffset = 0;
 let orangeFolderOffset = 0;
 
+let lastScrollY = 0;
+let scrollDirection = ""; // "down", "up", or ""
+let scrollTimeout;
+
 let font;
 let fontB;
 
@@ -49,6 +53,11 @@ let Insta;
 
 let stars = [];
 const STAR_COUNT = 600;
+
+const soundaidLink = "soundaid.html";
+const printproductionLink = "printproduction.html";
+const balancingConnectionLink = "balancingconnections.html";
+const hastashilpLink = "hastashilp.html"
 
 let scaleFactor = 1;
 let canvasWidth = 1600;
@@ -112,6 +121,22 @@ function setup() {
       speed: random(0.05, 0.2)
     });
   }
+
+  window.addEventListener("scroll", () => {
+    let currentScrollY = window.scrollY;
+    if (currentScrollY > lastScrollY) {
+      scrollDirection = "down";
+    } else if (currentScrollY < lastScrollY) {
+      scrollDirection = "up";
+    }
+    lastScrollY = currentScrollY;
+    clearTimeout(scrollTimeout);
+    scrollTimeout = setTimeout(() => {
+      scrollDirection = "";
+    }, 800);
+  });
+
+  noCursor(); // ← always last
 }
 
 function calculateCanvasSize() {
@@ -225,13 +250,6 @@ function draw() {
     image(IllusGreenFolder, 30 * scaleFactor, 450 * scaleFactor, 1540 * scaleFactor, 800 * scaleFactor);
   }
 
-  // ── CURSOR ────────────────────────────────────────────────────────────────
-  if (redHover || lblueHover || pinkHover || dblueHover || orangeHover) {
-    cursor(HAND);
-  } else {
-    cursor(ARROW);
-  }
-
   //Gallery img 1 faces
   image(
     IllusA,
@@ -256,15 +274,15 @@ function draw() {
     1070 * scaleFactor,
     1320 * scaleFactor, 
     500 * scaleFactor, 
-    550 * scaleFactor
+    560 * scaleFactor
   );
 
   //Gallery img 3B Shopper girl 
   image(
     IllusT,
-    1080 * scaleFactor,
+    1100 * scaleFactor,
     1260 * scaleFactor, 
-    460 * scaleFactor, 
+    400 * scaleFactor, 
     740 * scaleFactor
   );
 
@@ -421,6 +439,7 @@ function draw() {
     drawSpotlightOverlay(animRadius);
     if (animRadius > 40) drawMenuPanel();
   }
+  drawCustomCursor(); // ← always last so it's on top of everything
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -545,6 +564,47 @@ function drawMenuPanel() {
 // ─────────────────────────────────────────────────────────────────────────────
 
 function mousePressed() {
+  // Red folder click — leads to SoundAid
+  let redClick =
+    mouseX >= 30  * scaleFactor && mouseX <= 1570 * scaleFactor &&
+    mouseY >= 150 * scaleFactor && mouseY <= 200  * scaleFactor;
+
+  if (redClick) {
+    window.location.href = soundaidLink;
+    return;
+  }
+
+  //Light Blue folder click - leads to print production
+  let lightBlueClick =
+    mouseX >= 30  * scaleFactor && mouseX <= 1570 * scaleFactor &&
+    mouseY >= 200 * scaleFactor && mouseY <= 250  * scaleFactor;
+
+  if (lightBlueClick) {
+    window.location.href = printproductionLink;
+    return;
+  }
+
+  // pink folder click - leads to Balancing Connections 
+  let pinkClick =
+    mouseX >= 30  * scaleFactor && mouseX <= 1570 * scaleFactor &&
+    mouseY >= 250 * scaleFactor && mouseY <= 300  * scaleFactor;
+  
+  if (pinkClick) {
+    window.location.href = balancingConnectionLink;
+    return;
+  }
+
+  // orange folder click - leads to Hastashilp
+  let orangeClick =
+     mouseX >= 30  * scaleFactor && mouseX <= 1570 * scaleFactor &&
+     mouseY >= 400 * scaleFactor && mouseY <= 450  * scaleFactor;
+  
+     if (orangeClick) {
+      window.location.href = hastashilpLink;
+     return;
+     }
+  
+  // Menu clicks only work when menu is open
   if (!menuActive) return;
 
   if (window.menuItems) {
@@ -569,4 +629,80 @@ function mousePressed() {
       }
     }
   }
+}
+
+function drawCustomCursor() {
+  let label = "";
+
+  // Check which folder is hovered and assign label
+  let redHover =
+    mouseX >= 30  * scaleFactor && mouseX <= 1570 * scaleFactor &&
+    mouseY >= 150 * scaleFactor && mouseY <= 200  * scaleFactor;
+
+  let lblueHover =
+    mouseX >= 30  * scaleFactor && mouseX <= 1570 * scaleFactor &&
+    mouseY >= 200 * scaleFactor && mouseY <= 250  * scaleFactor;
+
+  let pinkHover =
+    mouseX >= 30  * scaleFactor && mouseX <= 1570 * scaleFactor &&
+    mouseY >= 250 * scaleFactor && mouseY <= 300  * scaleFactor;
+
+  let yellowHover =
+    mouseX >= 30  * scaleFactor && mouseX <= 1570 * scaleFactor &&
+    mouseY >= 300 * scaleFactor && mouseY <= 350  * scaleFactor;
+
+  let dblueHover =
+    mouseX >= 30  * scaleFactor && mouseX <= 1570 * scaleFactor &&
+    mouseY >= 350 * scaleFactor && mouseY <= 400  * scaleFactor;
+
+  let orangeHover =
+    mouseX >= 30  * scaleFactor && mouseX <= 1570 * scaleFactor &&
+    mouseY >= 400 * scaleFactor && mouseY <= 450  * scaleFactor;
+
+  if (redHover)    label = "SEE";
+  if (lblueHover)  label = "SEE";
+  if (pinkHover)   label = "SEE";
+  if (yellowHover) label = "SEE";
+  if (dblueHover)  label = "PLAY";
+  if (orangeHover) label = "SEE";
+
+  // Draw cursor
+  // Draw cursor
+  push();
+  let cursorSize = label ? 70 * scaleFactor : 60 * scaleFactor;
+
+  stroke(248, 244, 236);
+  strokeWeight(2);
+  fill(0);
+  circle(mouseX, mouseY, cursorSize);
+
+  if (label) {
+    // Folder hover label
+    noStroke();
+    textFont(fontB);
+    textSize(18 * scaleFactor);
+    textAlign(CENTER, CENTER);
+    fill(248, 244, 236);
+    text(label, mouseX, mouseY);
+
+  } else if (scrollDirection === "down") {
+    // Down arrow
+    stroke(248, 244, 236);
+    strokeWeight(2 * scaleFactor);
+    let a = 7 * scaleFactor;
+    line(mouseX, mouseY - a, mouseX, mouseY + a);         // vertical line
+    line(mouseX, mouseY + a, mouseX - a, mouseY);         // left leg
+    line(mouseX, mouseY + a, mouseX + a, mouseY);         // right leg
+
+  } else if (scrollDirection === "up") {
+    // Up arrow
+    stroke(248, 244, 236);
+    strokeWeight(2 * scaleFactor);
+    let a = 7 * scaleFactor;
+    line(mouseX, mouseY + a, mouseX, mouseY - a);         // vertical line
+    line(mouseX, mouseY - a, mouseX - a, mouseY);         // left leg
+    line(mouseX, mouseY - a, mouseX + a, mouseY);         // right leg
+  }
+
+  pop();
 }
