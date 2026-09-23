@@ -35,6 +35,11 @@ const hoshLink = "hoshruba.html";
 const daredevilLink = "daredevil.html";
 const printLink = "printproduction.html";
 
+// Balancing Connections keyword-pill reveal (0 = hidden, 1 = emerged)
+let bcPillReveal = 0;
+// Latch: once opened by hover, pills stay out until the section scrolls away
+let bcPillsOpen = false;
+
 let bcImgArea = {};
 let bcTitleArea = {};
 let momentsImgArea = {};
@@ -341,18 +346,111 @@ function draw() {
 // PROJECT DRAW FUNCTIONS
 // ─────────────────────────────────────────────────────────────────────────────
 
+// Returns eased 0..1 reveal amount for a block at the given canvas-Y.
+// Ramps from 0 to 1 as the block rises from the bottom of the viewport
+// into the lower-middle of the screen.
+function revealAmount(canvasY) {
+  const screenY = canvasY - (window.scrollY || 0);
+  const vh = window.innerHeight || height;
+  const start = vh * 0.95; // begins revealing when block is near bottom
+  const end = vh * 0.55;   // fully revealed by mid screen
+  const t = constrain(map(screenY, start, end, 0, 1), 0, 1);
+  // easeOutCubic for a smooth settle
+  return 1 - pow(1 - t, 3);
+}
+
+// Draws a frosted-glass pill with a bold label centered inside.
+// alpha 0..1 controls opacity as it emerges; angle tilts the whole pill.
+function drawFrostedPill(cx, cy, label, alpha, angle) {
+  if (alpha <= 0.01) return;
+  push();
+  translate(cx, cy);
+  rotate(angle || 0);
+
+  textFont(fontCB);
+  textSize(22 * scaleFactor);
+  textAlign(CENTER, CENTER);
+
+  const padX = 26 * scaleFactor;
+  const w = textWidth(label) + padX * 2;
+  const h = 44 * scaleFactor;
+  const a = 255 * alpha;
+
+  // Soft drop shadow for lift
+  noStroke();
+  fill(0, 0, 0, 60 * alpha);
+  rect(-w / 2, -h / 2 + 4 * scaleFactor, w, h, h / 2);
+
+  // Frosted glass body: translucent white with a very subtle border
+  fill(255, 255, 255, 42 * alpha);
+  stroke(255, 255, 255, 55 * alpha);
+  strokeWeight(0.8 * scaleFactor);
+  rect(-w / 2, -h / 2, w, h, h / 2);
+
+  // Subtle top highlight for the glassy sheen
+  noStroke();
+  fill(255, 255, 255, 30 * alpha);
+  rect(-w / 2 + 2 * scaleFactor, -h / 2 + 2 * scaleFactor, w - 4 * scaleFactor, h * 0.42, h / 2);
+
+  // Label
+  noStroke();
+  fill(234, 255, 151, a);
+  text(label, 0, 0);
+  pop();
+}
+
 function drawBalancingConnections() {
+  // Slightly smaller graphic to open up room for the emerging pills
   bcImgArea = {
     x: 90 * scaleFactor,
     y: 1150 * scaleFactor,
-    w: 990 * scaleFactor,
-    h: 650 * scaleFactor
+    w: 880 * scaleFactor,
+    h: 580 * scaleFactor
   };
 
   let bcHover =
     mouseX >= bcImgArea.x && mouseX <= bcImgArea.x + bcImgArea.w &&
     mouseY >= bcImgArea.y && mouseY <= bcImgArea.y + bcImgArea.h;
 
+  // Latch behavior: hovering the image opens the pills and keeps them out;
+  // they only tuck back once the section scrolls out of the viewport.
+  if (bcHover) bcPillsOpen = true;
+
+  // Is the section currently visible on screen?
+  const bcScreenY = 1150 * scaleFactor - (window.scrollY || 0);
+  const vh = window.innerHeight || height;
+  const bcOnScreen = bcScreenY > -bcImgArea.h && bcScreenY < vh;
+  if (!bcOnScreen) bcPillsOpen = false; // reset when scrolled away
+
+  // Ease the pill reveal toward the latched open/closed state
+  bcPillReveal = lerp(bcPillReveal, bcPillsOpen ? 1 : 0, 0.15);
+
+  // ── Frosted-glass keyword pills (drawn BEFORE the image so they
+  //    appear to emerge from behind it) ──────────────────────────────────────
+  // Each pill starts hidden behind the center of the graphic, then flies out
+  // to its own spot fanning around the top of the illustration.
+  const originX = bcImgArea.x + bcImgArea.w * 0.42;
+  const originY = bcImgArea.y + bcImgArea.h * 0.45;
+
+  // Per-pill destinations (offsets from origin) + a slight tilt each, so they
+  // scatter playfully around the illustration instead of lying flat.
+  const pills = [
+    { label: "Human-Centered Design", dx: -230 * scaleFactor, dy: -230 * scaleFactor, rot: -0.12 }, // upper left
+    { label: "Spatial Systems",        dx: 300 * scaleFactor,  dy: -170 * scaleFactor, rot: 0.10 },  // upper right
+    { label: "Research",               dx: -340 * scaleFactor, dy: 40 * scaleFactor,   rot: 0.09 },  // lower left
+    { label: "UX",                     dx: 320 * scaleFactor,  dy: 40 * scaleFactor,   rot: -0.08 }  // lower right
+  ];
+
+  for (let i = 0; i < pills.length; i++) {
+    // staggered emergence: later pills start a touch later
+    const t = constrain(map(bcPillReveal, i * 0.10, 0.55 + i * 0.10, 0, 1), 0, 1);
+    const ease = 1 - pow(1 - t, 3); // easeOutCubic
+    const px = originX + ease * pills[i].dx;
+    const py = originY + ease * pills[i].dy;
+    drawFrostedPill(px, py, pills[i].label, ease, pills[i].rot * ease);
+  }
+
+  // ── Project graphic (with hover zoom, as before) ───────────────────────────
   let bcScale = bcHover ? 1.05 : 1;
   let bcW = bcImgArea.w * bcScale;
   let bcH = bcImgArea.h * bcScale;
@@ -366,10 +464,11 @@ function drawBalancingConnections() {
   image(BCimg, bcX, bcY, bcW, bcH);
   pop();
 
+  // ── Title ───────────────────────────────────────────────────────────────
   textFont(font);
   textSize(72 * scaleFactor);
   let titleX = 880 * scaleFactor;
-  let titleY = 1190 * scaleFactor;
+  let titleY = 1350 * scaleFactor;
   let titleText = "BALANCING CONNECTIONS";
   let titleW = textWidth(titleText);
   let titleH = 72 * scaleFactor * 1.1;
@@ -381,15 +480,13 @@ function drawBalancingConnections() {
     ? color(234, 255, 151) : color(248, 244, 236));
   text(titleText, titleX, titleY);
 
-  textSize(30 * scaleFactor);
+  // ── One-line impact statement ─────────────────────────────────────────────
   textFont(fontB);
+  textSize(34 * scaleFactor);
   fill(248, 244, 236);
-  text("Designing Playful Interactions", 880 * scaleFactor, 1250 * scaleFactor);
-
-  textSize(21 * scaleFactor);
   text(
-    "This project applies human-centered design principles to address social isolation among international students in campus quads. Research uncovered a disconnect between shared space and shared experience, where newcomers lacked accessible entry points into existing social ecosystems.\n\n Discover the design process behind an intervention that integrates spatial systems and intentional interaction cues to foster low-pressure engagement and organic peer connection.",
-    880 * scaleFactor, 1250 * scaleFactor, 500 * scaleFactor, 400 * scaleFactor
+    "I designed playful spatial interventions that turn campus quads into low-pressure spaces where international students actually connect.",
+    880 * scaleFactor, 1320 * scaleFactor, 690 * scaleFactor, 300 * scaleFactor
   );
 }
 
