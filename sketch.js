@@ -1,8 +1,3 @@
-let menuActive = false;
-let animRadius = 0;
-let targetRadius = 0;
-let maxRadius;
-
 let scrollOffset = 0;
 let scrollSpeed = 1;
 let totalWidth = 0;
@@ -93,11 +88,6 @@ function setup() {
   const frame = document.querySelector(".canvas-frame");
   if (frame) cnv.parent(frame);
 
-  maxRadius = dist(0, 0, width, height);
-
-  const menuBtn = document.getElementById("menuBtn");
-  if (menuBtn) menuBtn.addEventListener("click", toggleMenu);
-
   setupSkillWords();
 
   for (let i = 0; i < STAR_COUNT; i++) {
@@ -138,7 +128,6 @@ function calculateCanvasSize() {
 function windowResized() {
   calculateCanvasSize();
   resizeCanvas(canvasWidth, canvasHeight);
-  maxRadius = dist(0, 0, width, height);
   
   skillWords = [];
   setupSkillWords();
@@ -337,27 +326,6 @@ function draw() {
     isHovering = true;
   }
 
-  if (menuActive && window.menuIcons) {
-    for (let icon of window.menuIcons) {
-      if (mouseX >= icon.x && mouseX <= icon.x + icon.w &&
-          mouseY >= icon.y && mouseY <= icon.y + icon.h) {
-        isHovering = true;
-        break;
-      }
-    }
-  }
-
-  if (menuActive && window.menuItems) {
-    for (let item of window.menuItems) {
-      if (item.bounds &&
-          mouseX >= item.bounds.x && mouseX <= item.bounds.x + item.bounds.w &&
-          mouseY >= item.bounds.y && mouseY <= item.bounds.y + item.bounds.h) {
-        isHovering = true;
-        break;
-      }
-    }
-  }
-
   image(
     IllusR,
     0 * scaleFactor,
@@ -367,13 +335,6 @@ function draw() {
   );
 
   cursor(isHovering ? HAND : ARROW);
-
-  animRadius = lerp(animRadius, targetRadius, 0.15);
-  if (animRadius > 1) {
-    drawSpotlightOverlay(animRadius);
-    if (animRadius > 40) drawMenuPanel();
-  }
-
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -838,99 +799,6 @@ function drawSkillWords() {
   } 
 }
 
-function toggleMenu() {
-  menuActive = !menuActive;
-  targetRadius = menuActive ? maxRadius : 0;
-  const menuBtn = document.getElementById("menuBtn");
-  if (menuBtn) menuBtn.classList.toggle("open", menuActive);
-}
-
-function drawSpotlightOverlay(radius) {
-  push();
-  noStroke();
-
-  const progress = constrain(radius / maxRadius, 0, 1);
-  const h = min(windowHeight, height);
-
-  fill(0, 180);
-  rect(0, 0, width, h);
-
-  const anchorX = width;
-  const anchorY = 0;
-
-  const p2x = lerp(anchorX, 0,        progress);
-  const p2y = lerp(anchorY, h * 0.32, progress);
-  const p3x = lerp(anchorX, 0,        progress);
-  const p3y = lerp(anchorY, h,        progress);
-  const p4x = lerp(anchorX, width,    progress);
-  const p4y = lerp(anchorY, h * 0.68, progress);
-
-  fill(234, 255, 150);
-  beginShape();
-  vertex(anchorX, anchorY);
-  vertex(p2x, p2y);
-  vertex(p3x, p3y);
-  vertex(p4x, p4y);
-  endShape(CLOSE);
-
-  pop();
-}
-
-function drawMenuPanel() {
-  const items = [
-    { text: "HOME",          link: "index.html"  },
-    { text: "Illustrations", link: "illustrations.html" },
-    { text: "Let's Connect", link: "contact.html" }
-  ];
-
-  const h = min(windowHeight, height);
-  textFont(font);
-  textAlign(LEFT, TOP);
-  textSize(68 * scaleFactor);
-  fill(0);
-
-  const x     = 120 * scaleFactor;
-  let   y     = h * 0.5;
-  const lineH = 70 * scaleFactor;
-
-  for (let i = 0; i < items.length; i++) {
-    const item      = items[i];
-    const itemWidth = textWidth(item.text);
-    const itemHeight = 68 * scaleFactor;
-
-    const isHovering =
-      mouseX >= x && mouseX <= x + itemWidth &&
-      mouseY >= y && mouseY <= y + itemHeight;
-
-    fill(isHovering ? color(63, 73, 23) : color(0));
-    text(item.text, x, y);
-    items[i].bounds = { x, y, w: itemWidth, h: itemHeight };
-    y += lineH;
-  }
-
-  let iconY      = y + 30 * scaleFactor;
-  let iconSize   = 40 * scaleFactor;
-  let iconSpace  = 50 * scaleFactor;
-  let iconX      = x;
-
-  window.menuIcons = [];
-
-  const iconDefs = [
-    { img: emailB,  link: "mailto:ajain42@horizon.csueastbay.edu"   },
-    { img: LinkdIn, link: "https://www.linkedin.com/in/aashi-jain29/" },
-    { img: GitHb,   link: "https://ajdesignb.github.io/AJ-Github/"   },
-    { img: Insta,   link: "https://www.instagram.com/aashij__"        }
-  ];
-
-  for (const def of iconDefs) {
-    image(def.img, iconX, iconY, iconSize, iconSize);
-    window.menuIcons.push({ x: iconX, y: iconY, w: iconSize, h: iconSize, link: def.link });
-    iconX += iconSpace;
-  }
-
-  window.menuItems = items;
-}
-
 // ─────────────────────────────────────────────────────────────────────────────
 // MOUSE
 // ─────────────────────────────────────────────────────────────────────────────
@@ -1048,27 +916,4 @@ function mousePressed() {
     window.open('https://www.instagram.com/aashij__', '_blank'); return;
   }
 
-  // Menu icons
-  if (menuActive && window.menuIcons) {
-    for (let icon of window.menuIcons) {
-      if (mouseX >= icon.x && mouseX <= icon.x + icon.w &&
-          mouseY >= icon.y && mouseY <= icon.y + icon.h) {
-        icon.link.startsWith('mailto:')
-          ? window.location.href = icon.link
-          : window.open(icon.link, '_blank');
-        return;
-      }
-    }
-  }
-
-  // Menu items
-  if (menuActive && window.menuItems) {
-    for (let item of window.menuItems) {
-      if (item.link && item.bounds &&
-          mouseX >= item.bounds.x && mouseX <= item.bounds.x + item.bounds.w &&
-          mouseY >= item.bounds.y && mouseY <= item.bounds.y + item.bounds.h) {
-        window.location.href = item.link; return;
-      }
-    }
-  }
 }

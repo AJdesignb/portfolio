@@ -39,60 +39,42 @@ justify-content: space-between;
   opacity: 0.7;
 }
 
-header-right {
+.header-right {
   display: flex;
   align-items: center;
-  gap: 24px;
+  gap: 8px;
 }
 
-.tagline {
-    color: #0f0f10;
-  font-size: 14px;
-  opacity: 0.9;
+.nav-link,
+.nav-link:link,
+.nav-link:visited {
+  color: #0f0f10;
+  font-size: 15px;
+  font-weight: 700;
+  text-decoration: none;
   cursor: pointer;
-  transition: opacity 0.2s ease;
+  padding: 8px 18px;
+  border-radius: 999px;
+  opacity: 0.75;
+  transition: opacity 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
 }
 
-.tagline:hover {
-  opacity: 0.7;
-}
-
-/* Header menu button */
-.menu-btn {
-  width: 26px;
-  height: 22px;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  cursor: pointer;
-  opacity: 0.8;
-  transition: opacity 0.2s ease, transform 0.2s ease;
-}
-
-.menu-btn:hover {
+.nav-link:hover {
   opacity: 1;
-  transform: translateY(-1px);
+  background: rgba(15, 15, 16, 0.06);
 }
 
-.menu-btn .line {
-  width: 100%;
-  height: 3px;
-  background: #0f0f10;
-  border-radius: 3px;
-  transition: transform 0.2s ease, opacity 0.2s ease;
+/* Active tab: white pill lifted off the cream header */
+.nav-link.active,
+.nav-link.active:link,
+.nav-link.active:visited {
+  opacity: 1;
+  background: #fffdf8;
+  box-shadow: 0 2px 8px rgba(15, 15, 16, 0.18);
 }
 
-/* X animation when menu open */
-.menu-btn.open .line:nth-child(1) {
-  transform: translateY(9px) rotate(45deg);
-}
-
-.menu-btn.open .line:nth-child(2) {
-  opacity: 0;
-}
-
-.menu-btn.open .line:nth-child(3) {
-  transform: translateY(-9px) rotate(-45deg);
+.nav-link.active:hover {
+  background: #fffdf8;
 }
 
 /* Canvas area */
