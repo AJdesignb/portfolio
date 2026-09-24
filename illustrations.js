@@ -49,7 +49,7 @@ let Insta;
 let stars = [];
 const STAR_COUNT = 600;
 
-const soundaidLink = "soundaid.html";
+const soundaidLink = "SoundAid.html";
 const printproductionLink = "printproduction.html";
 const balancingConnectionLink = "balancingconnections.html";
 const hastashilpLink = "hastashilp.html"
