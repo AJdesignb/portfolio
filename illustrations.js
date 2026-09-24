@@ -53,6 +53,7 @@ const soundaidLink = "soundaid.html";
 const printproductionLink = "printproduction.html";
 const balancingConnectionLink = "balancingconnections.html";
 const hastashilpLink = "hastashilp.html"
+const birdyGameLink = "https://ajdesignb.github.io/AJ-Github/TheBirdyProject/index.html";
 
 let scaleFactor = 1;
 let canvasWidth = 1600;
@@ -475,6 +476,16 @@ function mousePressed() {
   
   if (pinkClick) {
     window.location.href = balancingConnectionLink;
+    return;
+  }
+
+  // Dark blue folder click - leads to The Birdy Game (opens in a new tab)
+  let dblueClick =
+    mouseX >= 30  * scaleFactor && mouseX <= 1570 * scaleFactor &&
+    mouseY >= 350 * scaleFactor && mouseY <= 400  * scaleFactor;
+
+  if (dblueClick) {
+    window.open(birdyGameLink, "_blank", "noopener,noreferrer");
     return;
   }
 
