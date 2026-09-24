@@ -275,6 +275,10 @@ canvas {
   opacity: 0.4;
 }
 
+.footer-b-links .dl-arrow {
+  font-weight: bold;
+}
+
 .footer-b-legal {
   font-family: "CourierNewCustom", ui-monospace, monospace;
   font-size: 13px;

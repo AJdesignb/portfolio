@@ -106,7 +106,7 @@ function draw() {
   textSize(35 * scaleFactor);
   fill(234, 255, 151);
   text(
-    "I’m a graphic designer & visual strategist with 4+ years of experience \n collaborating with global brands including Amazon and Anheuser-Busch InBev. \n With a foundation in Visual Communications and Strategic Branding,\n I design clear, purposeful solutions that sit at the intersection of \n creativity, strategy, and user experience. \n\n I’m currently pursuing a Master’s in Interaction Design & Interactive Art \n at California State University, East Bay, where I’m expanding my practice \n into product-focused digital experiences, user-centered design, interactive \n storytelling, & AI-driven creative workflows. I’m especially interested \n in how emerging technologies can enhance storytelling, usability,\n and impact at scale.\n\n My approach combines strong visual systems, thoughtful storytelling, \n & experimentation across digital platforms to build work that feels \n both intuitive and impactful.",
+    "I’m a product & UX designer with a graphic design foundation and 4+ years \n of experience collaborating with global brands including Amazon and \n Anheuser-Busch InBev. Rooted in Visual Communications and Strategic \n Branding, I design clear, purposeful solutions that sit at the intersection \n of product thinking, strategy, and visual craft. \n\n I’m currently pursuing a Master’s in Interaction Design & Interactive Art \n at California State University, East Bay, where I’m deepening my focus on \n product-focused digital experiences, user-centered design, interactive \n storytelling, & AI-driven creative workflows. I’m especially interested \n in how emerging technologies can enhance usability, storytelling,\n and impact at scale.\n\n My approach blends product thinking with strong visual systems \n and thoughtful storytelling to build experiences that feel both \n intuitive and impactful.",
     50 * scaleFactor,
     250 * scaleFactor,
     1400 * scaleFactor,
@@ -184,7 +184,7 @@ function draw() {
   textSize(36 * scaleFactor);
   fill(248, 244, 236);
   text(
-    "Sunnyvale, California, USA",
+    "San Jose, California, USA",
     130 * scaleFactor,
     1060 * scaleFactor,
     1400 * scaleFactor,
@@ -301,8 +301,8 @@ function mousePressed() {
       mouseY >= 80 * scaleFactor && 
       mouseY <= 80 * scaleFactor + 100 * scaleFactor) {
     let link = document.createElement('a');
-    link.href = 'AashiJain_Resume.pdf';
-    link.download = 'AashiJain_Resume.pdf';
+    link.href = 'Aashi_Jain_Resume.pdf';
+    link.download = 'Aashi_Jain_Resume.pdf';
     link.click();
     return;
   }
@@ -316,8 +316,8 @@ function mousePressed() {
       mouseY >= 170 * scaleFactor && 
       mouseY <= 170 * scaleFactor + 50 * scaleFactor) {
     let link = document.createElement('a');
-    link.href = 'AashiJain_Resume.pdf';
-    link.download = 'AashiJain_Resume.pdf';
+    link.href = 'Aashi_Jain_Resume.pdf';
+    link.download = 'Aashi_Jain_Resume.pdf';
     link.click();
     return;
   }
