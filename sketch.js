@@ -35,10 +35,9 @@ const hoshLink = "hoshruba.html";
 const daredevilLink = "daredevil.html";
 const printLink = "printproduction.html";
 
-// Balancing Connections keyword-pill reveal (0 = hidden, 1 = emerged)
-let bcPillReveal = 0;
-// Latch: once opened by hover, pills stay out until the section scrolls away
-let bcPillsOpen = false;
+// Per-project keyword-pill state, keyed by project id.
+// { reveal: 0..1 eased opacity/offset, open: latched bool }
+let pillState = {};
 
 let bcImgArea = {};
 let bcTitleArea = {};
@@ -399,6 +398,43 @@ function drawFrostedPill(cx, cy, label, alpha, angle) {
   pop();
 }
 
+// Generic keyword-pill system for any project.
+//   id      : unique string key for latch state
+//   imgArea : { x, y, w, h } of the project graphic (canvas coords)
+//   pills   : [{ label, dx, dy, rot }]  (dx/dy are offsets in *base* px)
+//   opts    : { originFracX, originFracY } fraction of imgArea for the hidden origin
+// Pills are drawn BEFORE the image so they appear to emerge from behind it.
+// They latch open on hover and reset when the section scrolls off-screen.
+function drawKeywordPills(id, imgArea, pills, opts) {
+  opts = opts || {};
+  if (!pillState[id]) pillState[id] = { reveal: 0, open: false };
+  const st = pillState[id];
+
+  const hover =
+    mouseX >= imgArea.x && mouseX <= imgArea.x + imgArea.w &&
+    mouseY >= imgArea.y && mouseY <= imgArea.y + imgArea.h;
+  if (hover) st.open = true;
+
+  // Reset latch when the section scrolls out of the viewport
+  const screenY = imgArea.y - (window.scrollY || 0);
+  const vh = window.innerHeight || height;
+  const onScreen = screenY > -imgArea.h && screenY < vh;
+  if (!onScreen) st.open = false;
+
+  st.reveal = lerp(st.reveal, st.open ? 1 : 0, 0.15);
+
+  const originX = imgArea.x + imgArea.w * (opts.originFracX ?? 0.42);
+  const originY = imgArea.y + imgArea.h * (opts.originFracY ?? 0.45);
+
+  for (let i = 0; i < pills.length; i++) {
+    const t = constrain(map(st.reveal, i * 0.10, 0.55 + i * 0.10, 0, 1), 0, 1);
+    const ease = 1 - pow(1 - t, 3); // easeOutCubic
+    const px = originX + ease * pills[i].dx * scaleFactor;
+    const py = originY + ease * pills[i].dy * scaleFactor;
+    drawFrostedPill(px, py, pills[i].label, ease, (pills[i].rot || 0) * ease);
+  }
+}
+
 function drawBalancingConnections() {
   // Slightly smaller graphic to open up room for the emerging pills
   bcImgArea = {
@@ -412,43 +448,13 @@ function drawBalancingConnections() {
     mouseX >= bcImgArea.x && mouseX <= bcImgArea.x + bcImgArea.w &&
     mouseY >= bcImgArea.y && mouseY <= bcImgArea.y + bcImgArea.h;
 
-  // Latch behavior: hovering the image opens the pills and keeps them out;
-  // they only tuck back once the section scrolls out of the viewport.
-  if (bcHover) bcPillsOpen = true;
-
-  // Is the section currently visible on screen?
-  const bcScreenY = 1150 * scaleFactor - (window.scrollY || 0);
-  const vh = window.innerHeight || height;
-  const bcOnScreen = bcScreenY > -bcImgArea.h && bcScreenY < vh;
-  if (!bcOnScreen) bcPillsOpen = false; // reset when scrolled away
-
-  // Ease the pill reveal toward the latched open/closed state
-  bcPillReveal = lerp(bcPillReveal, bcPillsOpen ? 1 : 0, 0.15);
-
-  // ── Frosted-glass keyword pills (drawn BEFORE the image so they
-  //    appear to emerge from behind it) ──────────────────────────────────────
-  // Each pill starts hidden behind the center of the graphic, then flies out
-  // to its own spot fanning around the top of the illustration.
-  const originX = bcImgArea.x + bcImgArea.w * 0.42;
-  const originY = bcImgArea.y + bcImgArea.h * 0.45;
-
-  // Per-pill destinations (offsets from origin) + a slight tilt each, so they
-  // scatter playfully around the illustration instead of lying flat.
-  const pills = [
-    { label: "Human-Centered Design", dx: -230 * scaleFactor, dy: -230 * scaleFactor, rot: -0.12 }, // upper left
-    { label: "Spatial Systems",        dx: 300 * scaleFactor,  dy: -170 * scaleFactor, rot: 0.10 },  // upper right
-    { label: "Research",               dx: -340 * scaleFactor, dy: 40 * scaleFactor,   rot: 0.09 },  // lower left
-    { label: "UX",                     dx: 320 * scaleFactor,  dy: 40 * scaleFactor,   rot: -0.08 }  // lower right
-  ];
-
-  for (let i = 0; i < pills.length; i++) {
-    // staggered emergence: later pills start a touch later
-    const t = constrain(map(bcPillReveal, i * 0.10, 0.55 + i * 0.10, 0, 1), 0, 1);
-    const ease = 1 - pow(1 - t, 3); // easeOutCubic
-    const px = originX + ease * pills[i].dx;
-    const py = originY + ease * pills[i].dy;
-    drawFrostedPill(px, py, pills[i].label, ease, pills[i].rot * ease);
-  }
+  // Frosted-glass keyword pills (emerge from behind the graphic, latch on hover)
+  drawKeywordPills("bc", bcImgArea, [
+    { label: "Human-Centered Design", dx: -230, dy: -230, rot: -0.12 }, // upper left
+    { label: "Spatial Systems",        dx: 300,  dy: -170, rot: 0.10 },  // upper right
+    { label: "Research",               dx: -340, dy: 40,   rot: 0.09 },  // lower left
+    { label: "UX",                     dx: 320,  dy: 40,   rot: -0.08 }  // lower right
+  ]);
 
   // ── Project graphic (with hover zoom, as before) ───────────────────────────
   let bcScale = bcHover ? 1.05 : 1;
@@ -502,6 +508,13 @@ function drawMomentsApp() {
     mouseX >= momentsImgArea.x && mouseX <= momentsImgArea.x + momentsImgArea.w &&
     mouseY >= momentsImgArea.y && mouseY <= momentsImgArea.y + momentsImgArea.h;
 
+  // Keyword pills (emerge from behind the graphic, latch on hover)
+  drawKeywordPills("moments", momentsImgArea, [
+    { label: "AI-Native",           dx: -100, dy: -310, rot: -0.10 },
+    { label: "Product Design",      dx: 260,  dy: -330, rot: 0.10 },
+    { label: "Preventive Wellness", dx: -350, dy: -190,  rot: 0.08 }
+  ]);
+
   let momentsScale = momentsHover ? 1.05 : 1;
   let momentsW = momentsImgArea.w * momentsScale;
   let momentsH = momentsImgArea.h * momentsScale;
@@ -518,7 +531,7 @@ function drawMomentsApp() {
   textFont(font);
   textSize(72 * scaleFactor);
   let titleX = 180 * scaleFactor;
-  let titleY = 1900 * scaleFactor;
+  let titleY = 1930 * scaleFactor;
   let titleText = "MOMENTS APP";
   let titleW = textWidth(titleText);
   let titleH = 72 * scaleFactor * 1.1;
@@ -530,15 +543,12 @@ function drawMomentsApp() {
     ? color(234, 255, 151) : color(248, 244, 236));
   text(titleText, titleX, titleY);
 
-  textSize(30 * scaleFactor);
   textFont(fontB);
+  textSize(34 * scaleFactor);
   fill(248, 244, 236);
-  text("AI-Driven Preventive Wellness", 180 * scaleFactor, 1960 * scaleFactor);
-
-  textSize(20 * scaleFactor);
   text(
-    "This project explores how artificial intelligence and design can promote longer, healthier lives through prevention. Moments is an interactive app concept that reframes digital distraction as an opportunity for mindfulness and emotional resilience.\n\n The entire project was developed using AI as the primary research and design engine, from insight generation to concept structuring and behavioral pattern analysis. Our role as a team was to strategically craft prompts, guide direction, and critically evaluate outputs, demonstrating how human intention combined with AI capability can shape meaningful preventive wellness solutions.",
-    180 * scaleFactor, 1980 * scaleFactor, 500 * scaleFactor, 400 * scaleFactor
+    "I reframed digital distraction as a moment for mindfulness, designing an AI-first wellness app that turns idle screen time into emotional resilience.",
+    180 * scaleFactor, 1920 * scaleFactor, 640 * scaleFactor, 300 * scaleFactor
   );
 }
 
@@ -553,6 +563,14 @@ function drawSoundAid() {
   let saHover =
     mouseX >= saImgArea.x && mouseX <= saImgArea.x + saImgArea.w &&
     mouseY >= saImgArea.y && mouseY <= saImgArea.y + saImgArea.h;
+
+  // Keyword pills (emerge from behind the graphic, latch on hover)
+  drawKeywordPills("sa", saImgArea, [
+    { label: "Accessibility", dx: 10, dy: -340, rot: -0.10 },
+    { label: "Auditory UX",   dx: 250,  dy: -220, rot: 0.10 },
+    { label: "Prototyping",   dx: -330, dy: -340,  rot: 0.09 },
+    { label: "User Testing",  dx: -270,  dy: 260,  rot: -0.08 }
+  ], { originFracX: 0.5, originFracY: 0.5 });
 
   let saScale = saHover ? 1.05 : 1;
   let saW = saImgArea.w * saScale;
@@ -569,7 +587,7 @@ function drawSoundAid() {
   textFont(font);
   textSize(72 * scaleFactor);
   let titleX = 880 * scaleFactor;
-  let titleY = 2550 * scaleFactor;
+  let titleY = 2640 * scaleFactor;
   let titleText = "SOUND AID";
   let titleW = textWidth(titleText);
   let titleH = 72 * scaleFactor * 1.1;
@@ -581,15 +599,12 @@ function drawSoundAid() {
     ? color(234, 255, 151) : color(248, 244, 236));
   text(titleText, titleX, titleY);
 
-  textSize(30 * scaleFactor);
   textFont(fontB);
+  textSize(34 * scaleFactor);
   fill(248, 244, 236);
-  text("Designing for Accessibility Through Sound", 880 * scaleFactor, 2610 * scaleFactor);
-
-  textSize(21 * scaleFactor);
   text(
-    "SoundAid explores how sound-based interactions can support individuals with visual impairments or cognitive load challenges in navigating complex environments.\n\nThrough iterative research, prototyping, and user testing, the project investigates the intersection of auditory feedback design and inclusive UX.",
-    880 * scaleFactor, 2560 * scaleFactor, 500 * scaleFactor, 400 * scaleFactor
+    "I designed sound-based interactions that help people with visual impairments navigate complex environments with confidence.",
+    880 * scaleFactor, 2630 * scaleFactor, 640 * scaleFactor, 300 * scaleFactor
   );
 }
 
@@ -597,7 +612,7 @@ function drawProject1() {
   // HASTASHILP
   hsImgArea = {
     x: 90 * scaleFactor,
-    y: 3180 * scaleFactor,
+    y: 3220 * scaleFactor,
     w: 750 * scaleFactor,
     h: 550 * scaleFactor
   };
@@ -605,6 +620,14 @@ function drawProject1() {
   let hsHover =
     mouseX >= hsImgArea.x && mouseX <= hsImgArea.x + hsImgArea.w &&
     mouseY >= hsImgArea.y && mouseY <= hsImgArea.y + hsImgArea.h;
+
+  // Keyword pills (emerge from behind the graphic, latch on hover)
+  drawKeywordPills("hs", hsImgArea, [
+    { label: "Game Design",      dx: -20, dy: -300, rot: -0.10 },
+    { label: "Cultural Heritage", dx: 380,  dy: -320, rot: 0.10 },
+    { label: "Systems Design",   dx: -120, dy: 360,  rot: 0.09 },
+    { label: "Illustration",     dx: 520,  dy: 150,  rot: -0.08 }
+  ]);
 
   let hsScale = hsHover ? 1.05 : 1;
   let hsW = hsImgArea.w * hsScale;
@@ -617,7 +640,7 @@ function drawProject1() {
   textFont(font);
   textSize(72 * scaleFactor);
   let titleX = 880 * scaleFactor;
-  let titleY = 3250 * scaleFactor;
+  let titleY = 3350 * scaleFactor;
   let titleText = "HASTASHILP";
   let titleW = textWidth(titleText);
   let titleH = 72 * scaleFactor * 1.1;
@@ -629,30 +652,35 @@ function drawProject1() {
     ? color(234, 255, 151) : color(248, 244, 236));
   text(titleText, titleX, titleY);
 
-  textSize(30 * scaleFactor);
   textFont(fontB);
+  textSize(34 * scaleFactor);
   fill(248, 244, 236);
-  text("Handicrafts of India (Card Game Design)", 880 * scaleFactor, 3310 * scaleFactor);
-
-  textSize(21 * scaleFactor);
   text(
-    "The project focuses on raising awareness about the many traditional crafts that surround us. According to Handmade in India (NID, 2005), India is home to nearly 516 distinct handicrafts, yet most of us can barely name even twenty.\n\nThis game is designed for young adults and above, using learning through play to spark curiosity and build cultural understanding. By engaging players, the game encourages a deeper appreciation of the diverse crafts of India and helps reconnect people with their own cultural heritage",
-    880 * scaleFactor, 3330 * scaleFactor, 500 * scaleFactor, 400 * scaleFactor
+    "I designed a card game that reconnects young adults with India's 500+ traditional crafts through learning-through-play.",
+    880 * scaleFactor, 3325 * scaleFactor, 640 * scaleFactor, 300 * scaleFactor
   );
 }
 
 function drawProject2() {
   // HOSHRUBA
   hoshImgArea = {
-    x: 700 * scaleFactor,
-    y: 3600 * scaleFactor,
-    w: 800 * scaleFactor,
-    h: 900 * scaleFactor
+    x: 800 * scaleFactor,
+    y: 3700 * scaleFactor,
+    w: 700 * scaleFactor,
+    h: 790 * scaleFactor
   };
 
   let hoshHover =
     mouseX >= hoshImgArea.x && mouseX <= hoshImgArea.x + hoshImgArea.w &&
     mouseY >= hoshImgArea.y && mouseY <= hoshImgArea.y + hoshImgArea.h;
+
+  // Keyword pills (emerge from behind the graphic, latch on hover)
+  drawKeywordPills("hosh", hoshImgArea, [
+    { label: "Visual Storytelling", dx: -180, dy: -180, rot: -0.10 },
+    { label: "Narrative Design",    dx: 300,  dy: -180, rot: 0.10 },
+    { label: "Illustration",        dx: -400, dy: 300,  rot: 0.09 },
+    { label: "Poetry",              dx: 420,  dy: 340,  rot: -0.08 }
+  ]);
 
   let hoshScale = hoshHover ? 1.05 : 1;
   let hoshW = hoshImgArea.w * hoshScale;
@@ -665,7 +693,7 @@ function drawProject2() {
   textFont(font);
   textSize(72 * scaleFactor);
   let hTitleX = 180 * scaleFactor;
-  let hTitleY = 3930 * scaleFactor;
+  let hTitleY = 4030 * scaleFactor;
   let hTitleText = "Angry God's Dilemma";
   let hTitleW = textWidth(hTitleText);
   let hTitleH = 72 * scaleFactor * 1.1;
@@ -677,15 +705,12 @@ function drawProject2() {
     ? color(234, 255, 151) : color(248, 244, 236));
   text(hTitleText, hTitleX, hTitleY);
 
-  textSize(30 * scaleFactor);
   textFont(fontB);
+  textSize(34 * scaleFactor);
   fill(248, 244, 236);
-  text("Tilism e- Hoshruba", 180 * scaleFactor, 3990 * scaleFactor);
-
-  textSize(20 * scaleFactor);
   text(
-    "This project adapts magical excerpts from Tilism-e-Hoshruba to explore how its fictional world reflects issues in our real one. Inspired by Amar Ayyar's Zambil trickery where he disguises himself to deceive others—the work draws parallels to how people today often hide their true identities to appear socially acceptable.\n\nThrough this reinterpretation, the project raises questions about gender stereotypes, individuality, self-view, and self-acceptance. By using the story's aesthetic, magic, and narrative twists, it aims to creatively highlight contemporary social crises and encourage readers to reflect on their own identities.",
-    180 * scaleFactor, 4000 * scaleFactor, 500 * scaleFactor, 400 * scaleFactor
+    "I reimagined magical excerpts from Tilism-e-Hoshruba to spark reflection on identity, gender, and self-acceptance in the world today.",
+    180 * scaleFactor, 4040 * scaleFactor, 480 * scaleFactor, 300 * scaleFactor
   );
 }
 
@@ -702,6 +727,14 @@ function drawProject3() {
     mouseX >= ddImgArea.x && mouseX <= ddImgArea.x + ddImgArea.w &&
     mouseY >= ddImgArea.y && mouseY <= ddImgArea.y + ddImgArea.h;
 
+  // Keyword pills (emerge from behind the graphic, latch on hover)
+  drawKeywordPills("dd", ddImgArea, [
+    { label: "Branding",        dx: -230, dy: -320, rot: -0.10 },
+    { label: "Packaging Design", dx: 230,  dy: -340, rot: 0.10 },
+    { label: "Visual Identity", dx: -280, dy: 300,  rot: 0.09 },
+    { label: "Logo",            dx: 300,  dy: 260,  rot: -0.08 }
+  ], { originFracX: 0.5, originFracY: 0.5 });
+
   let ddScale = ddHover ? 1.05 : 1;
   let ddW = ddImgArea.w * ddScale;
   let ddH = ddImgArea.h * ddScale;
@@ -713,7 +746,7 @@ function drawProject3() {
   textFont(font);
   textSize(72 * scaleFactor);
   let titleX = 880 * scaleFactor;
-  let titleY = 4640 * scaleFactor;
+  let titleY = 4750 * scaleFactor;
   let titleText = "DAREDEVIL Brewing Co.";
   let titleW = textWidth(titleText);
   let titleH = 72 * scaleFactor * 1.1;
@@ -725,15 +758,12 @@ function drawProject3() {
     ? color(234, 255, 151) : color(248, 244, 236));
   text(titleText, titleX, titleY);
 
-  textSize(30 * scaleFactor);
   textFont(fontB);
+  textSize(34 * scaleFactor);
   fill(248, 244, 236);
-  text("Branding Exploration", 880 * scaleFactor, 4700 * scaleFactor);
-
-  textSize(21 * scaleFactor);
   text(
-    "A creative exploration of beer branding through \n bold visual identity and packaging design. \n\n This project reimagines the Daredevil brand \n with a focus on striking aesthetics and \n memorable consumer experience.",
-    880 * scaleFactor, 4630 * scaleFactor, 500 * scaleFactor, 400 * scaleFactor
+    "I built a bold visual identity and packaging system that gives the Daredevil beer brand a striking, memorable shelf presence.",
+    880 * scaleFactor, 4715 * scaleFactor, 640 * scaleFactor, 300 * scaleFactor
   );
 }
 
@@ -741,14 +771,22 @@ function drawProject4() {
   // PRINT PRODUCTION
   ppImgArea = {
     x: 700 * scaleFactor,
-    y: 5100 * scaleFactor,
-    w: 920 * scaleFactor,
-    h: 820 * scaleFactor
+    y: 5200 * scaleFactor,
+    w: 820 * scaleFactor,
+    h: 730 * scaleFactor
   };
 
   let ppHover =
     mouseX >= ppImgArea.x && mouseX <= ppImgArea.x + ppImgArea.w &&
     mouseY >= ppImgArea.y && mouseY <= ppImgArea.y + ppImgArea.h;
+
+  // Keyword pills (emerge from behind the graphic, latch on hover)
+  drawKeywordPills("pp", ppImgArea, [
+    { label: "Print Design", dx: -300, dy: -190, rot: -0.10 },
+    { label: "Research",     dx: 380,  dy: -280, rot: 0.10 },
+    { label: "Editorial",    dx: -280, dy: 200,  rot: 0.09 },
+    { label: "Field Study",  dx: 330,  dy: 320,  rot: -0.08 }
+  ]);
 
   let ppScale = ppHover ? 1.05 : 1;
   let ppW = ppImgArea.w * ppScale;
@@ -761,7 +799,7 @@ function drawProject4() {
   textFont(font);
   textSize(72 * scaleFactor);
   let titleX = 180 * scaleFactor;
-  let titleY = 5300 * scaleFactor;
+  let titleY = 5450 * scaleFactor;
   let titleText = "PRINT PRODUCTION";
   let titleW = textWidth(titleText);
   let titleH = 72 * scaleFactor * 1.1;
@@ -773,15 +811,12 @@ function drawProject4() {
     ? color(234, 255, 151) : color(248, 244, 236));
   text(titleText, titleX, titleY);
 
-  textSize(30 * scaleFactor);
   textFont(fontB);
+  textSize(34 * scaleFactor);
   fill(248, 244, 236);
-  text("Print & Production Design", 180 * scaleFactor, 5360 * scaleFactor);
-
-  textSize(20 * scaleFactor);
   text(
-    "Exploring the intersection of digital design and physical production. This project showcases expertise in print design, production workflows, and bringing creative visions to life through tangible mediums. \n\n Print Production is a research-led publication documenting an on-ground study of print production in Bangalore. The project focuses on Sultan Pet and Cotton Pet—areas known for their dense network of print workshops and production units.\n\n The final output is a printed book combining written reflections, visual documentation, and physical print samples collected during the research.",
-    180 * scaleFactor, 5390 * scaleFactor, 500 * scaleFactor, 400 * scaleFactor
+    "I documented Bangalore's dense print-workshop ecosystem in a research-led book blending field study, visuals, and real print samples.",
+    180 * scaleFactor, 5460 * scaleFactor, 480 * scaleFactor, 300 * scaleFactor
   );
 }
 
@@ -798,6 +833,14 @@ function drawProject5() {
     mouseX >= MBimgArea.x && mouseX <= MBimgArea.x + MBimgArea.w &&
     mouseY >= MBimgArea.y && mouseY <= MBimgArea.y + MBimgArea.h;
 
+  // Keyword pills (emerge from behind the graphic, latch on hover)
+  drawKeywordPills("mb", MBimgArea, [
+    { label: "Product Design",     dx: -260, dy: -260, rot: -0.10 },
+    { label: "Interaction Design", dx: -250,  dy: -160, rot: 0.10 },
+    { label: "Automotive",         dx: -260, dy: 10,  rot: 0.09 },
+    { label: "Concept",            dx: -250,  dy: -80,  rot: -0.08 }
+  ]);
+
   let bbScale = bbHover ? 1.05 : 1;
   let bbW = MBimgArea.w * bbScale;
   let bbH = MBimgArea.h * bbScale;
@@ -809,7 +852,7 @@ function drawProject5() {
   textFont(font);
   textSize(72 * scaleFactor);
   let titleX = 880 * scaleFactor;
-  let titleY = 6110 * scaleFactor;
+  let titleY = 6150 * scaleFactor;
   let titleText = "Mercedes Benz R&D";
   let titleW = textWidth(titleText);
   let titleH = 72 * scaleFactor * 1.1;
@@ -821,15 +864,12 @@ function drawProject5() {
     ? color(234, 255, 151) : color(248, 244, 236));
   text(titleText, titleX, titleY);
 
-  textSize(30 * scaleFactor);
   textFont(fontB);
+  textSize(34 * scaleFactor);
   fill(248, 244, 236);
-  text("Concept Presentation", 880 * scaleFactor, 6170 * scaleFactor);
-
-  textSize(21 * scaleFactor);
   text(
-    "This project reimagines the Mercedes-AMG Track Pace App through a product and interaction design lens, exploring how racing data can be experienced rather than simply viewed. The concept focuses on designing intuitive interactions that allow users to relive race highlights while capturing the emotional context behind each moment.\n\n By borrowing interaction patterns from reels, flash stories, and social feeds, the experience turns performance metrics into dynamic, shareable narratives enhancing engagement, emotional connection, and overall user experience.",
-    880 * scaleFactor, 6190 * scaleFactor, 500 * scaleFactor, 400 * scaleFactor
+    "I reimagined the Mercedes-AMG Track Pace app so racing data can be felt as shareable, emotional stories, not just viewed.",
+    880 * scaleFactor, 6125 * scaleFactor, 640 * scaleFactor, 300 * scaleFactor
   );
 }
 
