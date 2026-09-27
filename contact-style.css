@@ -87,6 +87,20 @@ justify-content: space-between;
   background: rgba(15, 15, 16, 0.06);
 }
 
+/* Icon inside a nav tab (e.g. GitHub) */
+.nav-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.nav-icon {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+  display: block;
+}
+
 /* Active tab: white pill lifted off the cream header */
 .nav-link.active,
 .nav-link.active:link,
