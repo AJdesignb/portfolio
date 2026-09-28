@@ -14,6 +14,7 @@ let MBimg;
 let BCimg;
 let MAimg;
 let SAimg;
+let HWimg;
 
 let bgimg;
 let Starimg;
@@ -40,6 +41,7 @@ const projectLink = "hastashilp.html";
 const hoshLink = "hoshruba.html";
 const daredevilLink = "daredevil.html";
 const printLink = "printproduction.html";
+const haywardsLink = "haywards.html";
 
 // Per-project keyword-pill state, keyed by project id.
 // { reveal: 0..1 eased opacity/offset, open: latched bool }
@@ -69,6 +71,8 @@ let hoshImgArea = {};
 let hoshTitleArea = {};
 let ddImgArea = {};
 let ddTitleArea = {};
+let hwImgArea = {};
+let hwTitleArea = {};
 let ppImgArea = {};
 let ppTitleArea = {};
 let MBimgArea = {};
@@ -106,6 +110,8 @@ function preload() {
   logoABI         = loadImage("Abi Logo.png");
   logoCorona      = loadImage("Corona White Logo.png");
   logoHoegaarden  = loadImage("Hoegaarden Logo PMS.png");
+
+  HWimg = loadImage("Haywards cover.png");
 }
 
 function setup() {
@@ -245,7 +251,8 @@ function draw() {
   const _areaShift = contentPush + projectsBaseOffset;
   const _areas = [bcImgArea, bcTitleArea, momentsImgArea, momentsTitleArea,
     saImgArea, saTitleArea, hsImgArea, hsTitleArea, hoshImgArea, hoshTitleArea,
-    ddImgArea, ddTitleArea, ppImgArea, ppTitleArea, MBimgArea, bbTitleArea];
+    ddImgArea, ddTitleArea, hwImgArea, hwTitleArea, ppImgArea, ppTitleArea,
+    MBimgArea, bbTitleArea];
   for (const a of _areas) { if (a && a.y !== undefined) a.y += _areaShift; }
 
   let isHovering = false;
@@ -312,6 +319,11 @@ function draw() {
 
   if (mouseX >= ddImgArea.x && mouseX <= ddImgArea.x + ddImgArea.w &&
       mouseY >= ddImgArea.y && mouseY <= ddImgArea.y + ddImgArea.h) {
+    isHovering = true;
+  }
+
+  if (mouseX >= hwImgArea.x && mouseX <= hwImgArea.x + hwImgArea.w &&
+      mouseY >= hwImgArea.y && mouseY <= hwImgArea.y + hwImgArea.h) {
     isHovering = true;
   }
 
@@ -847,13 +859,17 @@ function drawProjectCard(cfg) {
 
     // title
     let ty = ky + 16 * scaleFactor;
+    const titleLead = 40 * scaleFactor;   // tighter line spacing for 2-line titles
     textFont(font); textSize(43 * scaleFactor); textAlign(CENTER, TOP);
+    textLeading(titleLead);
     fill(hover ? color(234, 255, 151) : color(248, 244, 236));
     text(cfg.title, centerX, ty);
 
-    // description
-    ty += 46 * scaleFactor;
+    // description — advance past however many title lines there are
+    const titleLines = String(cfg.title).split("\n").length;
+    ty += 46 * scaleFactor + (titleLines - 1) * titleLead;
     textFont(fontB); textSize(23 * scaleFactor); textAlign(CENTER, TOP);
+    textLeading(28 * scaleFactor);   // normal spacing for the wrapped description
     fill(248, 244, 236, 220);
     text(cfg.desc, cx + 30 * scaleFactor, ty, cw - 60 * scaleFactor, textH);
   }
@@ -912,24 +928,29 @@ function drawBalancingConnections() {
     title: "ANGRY GOD'S DILEMMA",
     desc: "A reimagining of Tilism-e-Hoshruba that sparks reflection on identity, gender, and self-acceptance today."
   });
+  hwImgArea = hwTitleArea = drawProjectCard({
+    x: col(2), y: row2Y, w: cardW, h: cardH2, img: HWimg, imgScale: 0.9, tint: [244, 148, 193],
+    keywords: ["Branding", "Packaging", "Typography"],
+    title: "HAYWARDS BRAND\nEXPLORATIONS",
+    desc: "A modern-retro rebrand of Haywards 5000 packaging — bringing back the old with a fresh twist, a la The Archies."
+  });
+
+  // ── Row 3 (3 cards, taller) ──
+  const cardH3 = 700 * scaleFactor;
   ddImgArea = ddTitleArea = drawProjectCard({
-    x: col(2), y: row2Y, w: cardW, h: cardH2, img: DDimg, imgScale: 1.22, imgOffsetY: 30, tint: [244, 148, 193],
+    x: col(0), y: row3Y, w: cardW, h: cardH3, img: DDimg, imgScale: 1.22, imgOffsetY: 30, tint: [244, 148, 193],
     keywords: ["Branding", "Packaging Design", "Visual Identity", "Logo"],
     title: "DAREDEVIL Brewing Co.",
     desc: "A bold visual identity and packaging system that gives the Daredevil beer brand a striking shelf presence."
   });
-
-  // ── Row 3 (2 cards, centered, taller) ──
-  const cardH3 = 700 * scaleFactor;
-  const row3StartX = (width - (cardW * 2 + gap)) / 2;
   ppImgArea = ppTitleArea = drawProjectCard({
-    x: row3StartX, y: row3Y, w: cardW, h: cardH3, img: PPimg, tint: [224, 102, 59],
+    x: col(1), y: row3Y, w: cardW, h: cardH3, img: PPimg, tint: [224, 102, 59],
     keywords: ["Print Design", "Research", "Editorial", "Field Study"],
     title: "PRINT PRODUCTION",
     desc: "A research-led book documenting Bangalore's dense print-workshop ecosystem, with real print samples."
   });
   MBimgArea = bbTitleArea = drawProjectCard({
-    x: row3StartX + (cardW + gap), y: row3Y, w: cardW, h: cardH3, img: MBimg,
+    x: col(2), y: row3Y, w: cardW, h: cardH3, img: MBimg,
     layout: "side", imgScale: 1.05, imgTilt: -0.1, tint: [245, 201, 78],
     keywords: ["Product Design", "Interaction Design", "Automotive", "Concept"],
     title: "Mercedes Benz R&D",
@@ -1063,6 +1084,16 @@ function mousePressed() {
   if (mouseX >= ddTitleArea.x && mouseX <= ddTitleArea.x + ddTitleArea.w &&
       mouseY >= ddTitleArea.y && mouseY <= ddTitleArea.y + ddTitleArea.h) {
     window.location.href = daredevilLink; return;
+  }
+
+  // Haywards Brand Explorations
+  if (mouseX >= hwImgArea.x && mouseX <= hwImgArea.x + hwImgArea.w &&
+      mouseY >= hwImgArea.y && mouseY <= hwImgArea.y + hwImgArea.h) {
+    window.location.href = haywardsLink; return;
+  }
+  if (mouseX >= hwTitleArea.x && mouseX <= hwTitleArea.x + hwTitleArea.w &&
+      mouseY >= hwTitleArea.y && mouseY <= hwTitleArea.y + hwTitleArea.h) {
+    window.location.href = haywardsLink; return;
   }
 
   // Print Production
