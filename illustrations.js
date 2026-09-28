@@ -450,34 +450,8 @@ function drawGalaxy() {
 
 function mousePressed() {
   // Red folder click — leads to SoundAid
-  let redClick =
-    mouseX >= 30  * scaleFactor && mouseX <= 1570 * scaleFactor &&
-    mouseY >= 150 * scaleFactor && mouseY <= 200  * scaleFactor;
-
-  if (redClick) {
-    window.location.href = soundaidLink;
-    return;
-  }
-
-  //Light Blue folder click - leads to print production
-  let lightBlueClick =
-    mouseX >= 30  * scaleFactor && mouseX <= 1570 * scaleFactor &&
-    mouseY >= 200 * scaleFactor && mouseY <= 250  * scaleFactor;
-
-  if (lightBlueClick) {
-    window.location.href = printproductionLink;
-    return;
-  }
-
-  // pink folder click - leads to Balancing Connections 
-  let pinkClick =
-    mouseX >= 30  * scaleFactor && mouseX <= 1570 * scaleFactor &&
-    mouseY >= 250 * scaleFactor && mouseY <= 300  * scaleFactor;
-  
-  if (pinkClick) {
-    window.location.href = balancingConnectionLink;
-    return;
-  }
+  // Red (Storytelling Projects), Light Blue (Game Design) and
+  // Pink (Branding Projects) folders have no links for now.
 
   // Dark blue folder click - leads to The Birdy Game (opens in a new tab)
   let dblueClick =
@@ -489,15 +463,7 @@ function mousePressed() {
     return;
   }
 
-  // orange folder click - leads to Hastashilp
-  let orangeClick =
-     mouseX >= 30  * scaleFactor && mouseX <= 1570 * scaleFactor &&
-     mouseY >= 400 * scaleFactor && mouseY <= 450  * scaleFactor;
-  
-     if (orangeClick) {
-      window.location.href = hastashilpLink;
-     return;
-     }
+  // Orange (Type & Print) folder has no link for now.
 }
 
 function drawCustomCursor() {
@@ -528,12 +494,8 @@ function drawCustomCursor() {
     mouseX >= 30  * scaleFactor && mouseX <= 1570 * scaleFactor &&
     mouseY >= 400 * scaleFactor && mouseY <= 450  * scaleFactor;
 
-  if (redHover)    label = "SEE";
-  if (lblueHover)  label = "SEE";
-  if (pinkHover)   label = "SEE";
-  if (yellowHover) label = "SEE";
+  // Only folders with a working link show an action label
   if (dblueHover)  label = "PLAY";
-  if (orangeHover) label = "SEE";
 
   // Draw cursor
   // Draw cursor

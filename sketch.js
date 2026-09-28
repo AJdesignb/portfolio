@@ -77,7 +77,7 @@ const STAR_COUNT = 600;
 
 let scaleFactor = 1;
 let canvasWidth = 1600;
-let canvasHeight = 7320;
+let canvasHeight = 4200;
 
 function preload() {
   font = loadFont("Rosean.ttf");
@@ -127,7 +127,7 @@ function setup() {
 
 function calculateCanvasSize() {
   const baseWidth = 1600;
-  const baseHeight = 7320;
+  const baseHeight = 4200;
   
   if (windowWidth < 768) {
     scaleFactor = 0.4;
@@ -236,14 +236,7 @@ function draw() {
   const projectsBaseOffset = 100 * scaleFactor;
   push();
   translate(0, contentPush + projectsBaseOffset);
-  drawBalancingConnections();  
-  drawMomentsApp();
-  drawSoundAid();
-  drawProject1();
-  drawProject2();
-  drawProject3();
-  drawProject4();
-  drawProject5();
+  drawBalancingConnections();  // draws all 8 project cards
   pop();
 
   // Shift all project hit-areas by the same offset so clicks/hovers stay aligned
@@ -360,7 +353,7 @@ function draw() {
   image(
     IllusR,
     0 * scaleFactor,
-    6520 * scaleFactor, 
+    3420 * scaleFactor, 
     1600 * scaleFactor, 
     650 * scaleFactor
   );
@@ -476,7 +469,7 @@ function drawBrandLogos() {
                 "Streamlined UPI payment flows"]
     },
     {
-      id: "abi", img: logoABI, fit: 1.0,
+      id: "abi", img: logoABI, fit: 1.0, cardExtra: 190,
       role: "Sr. Graphic Designer",
       bullets: ["Brand systems, typography & packaging",
                 "Campaign toolkits",
@@ -484,14 +477,14 @@ function drawBrandLogos() {
     },
     {
       id: "corona", img: logoCorona, fit: 1.25,
-      role: "under AB InBev",
+      role: "Sr. Graphic Designer",
       bullets: ["50+ festival visuals & spaces",
                 "Immersive brand experiences",
                 "Social media marketing"]
     },
     {
       id: "hoegaarden", img: logoHoegaarden, fit: 1.2,
-      role: "under AB InBev",
+      role: "Sr. Graphic Designer",
       bullets: ["Visual & experiential design",
                 "Brand partnership storyboarding",
                 "Social media marketing"]
@@ -591,39 +584,41 @@ function drawBrandLogos() {
 
     // hover card with role + bullet pointers
     if (h > 0.02) {
-      const cardW = plateW + 110 * scaleFactor;
-      const cardX = px - 55 * scaleFactor;
+      const cardW = plateW + (b.cardExtra || 110) * scaleFactor;
+      const cardX = px + plateW / 2 - cardW / 2;   // centered under the plate
       const cardY = plateY + plateH + 14 * scaleFactor + lift;
-      const cardH = 150 * scaleFactor;
+      const cardH = 160 * scaleFactor;
       const a = h;
 
       push();
       noStroke();
+      // soft shadow
       fill(0, 0, 0, 70 * a);
       rect(cardX, cardY + 4 * scaleFactor, cardW, cardH, 14 * scaleFactor);
-      fill(255, 255, 255, 42 * a);
-      stroke(255, 255, 255, 55 * a);
-      strokeWeight(0.8 * scaleFactor);
+      // lime-green card body for contrast
+      fill(234, 255, 151, 255 * a);
+      noStroke();
       rect(cardX, cardY, cardW, cardH, 14 * scaleFactor);
 
       const padX = 20 * scaleFactor;
       let ty = cardY + 14 * scaleFactor;
 
-      // role subheading
+      // role subheading — black, bold
       noStroke();
-      textFont(fontC);
+      textFont(fontCB);
       textAlign(LEFT, TOP);
-      textSize(13 * scaleFactor);
-      fill(255, 255, 255, 255 * a);
+      textSize(15 * scaleFactor);
+      fill(0, 0, 0, 220 * a);
       text(b.role, cardX + padX, ty);
-      ty += 24 * scaleFactor;
+      ty += 26 * scaleFactor;
 
-      // bullets — small, readable (single line each)
-      textSize(14 * scaleFactor);
-      fill(234, 255, 151, 255 * a);
+      // bullets — black, readable (single line each)
+      textFont(fontC);
+      textSize(16 * scaleFactor);
+      fill(0, 0, 0, 255 * a);
       for (const line of b.bullets) {
         text("• " + line, cardX + padX, ty);
-        ty += 28 * scaleFactor;
+        ty += 29 * scaleFactor;
       }
       pop();
     }
@@ -632,442 +627,267 @@ function drawBrandLogos() {
   window.brandAreas = brands.map(b => b._area).filter(Boolean);
 }
 
+// Reusable glass project card.
+// cfg = { x, y, w, h, img, keywords[], title, desc }
+// Returns the hit-area {x,y,w,h} for click/hover routing.
+function drawProjectCard(cfg) {
+  const cardX = cfg.x, cardY = cfg.y, cardW = cfg.w, cardH = cfg.h;
+  const r = 26 * scaleFactor;
+  const textH = cardH - cardH * 0.74;
+
+  const hover =
+    mouseX >= cardX && mouseX <= cardX + cardW &&
+    mouseY >= cardY && mouseY <= cardY + cardH;
+
+  // subtle hover lift + scale
+  const scaleAmt = hover ? 1.02 : 1;
+  const cw = cardW * scaleAmt;
+  const ch = cardH * scaleAmt;
+  const cx = cardX - (cw - cardW) / 2;
+  const cy = cardY - (ch - cardH) / 2 + (hover ? -6 * scaleFactor : 0);
+
+  push();
+
+  // soft drop shadow
+  noStroke();
+  fill(0, 0, 0, hover ? 110 : 80);
+  rect(cx, cy + 12 * scaleFactor, cw, ch, r);
+
+  // glass body
+  fill(255, 255, 255, hover ? 60 : 48);
+  stroke(255, 255, 255, hover ? 110 : 80);
+  strokeWeight(1.1 * scaleFactor);
+  rect(cx, cy, cw, ch, r);
+
+  // top sheen
+  noStroke();
+  fill(255, 255, 255, hover ? 70 : 55);
+  rect(cx + 4 * scaleFactor, cy + 4 * scaleFactor,
+       cw - 8 * scaleFactor, ch * 0.10, r);
+  fill(255, 255, 255, hover ? 150 : 120);
+  rect(cx + r, cy + 3 * scaleFactor, cw - r * 2, 2.5 * scaleFactor, 2 * scaleFactor);
+
+  const kwSize = 15 * scaleFactor;
+  const kwPadX = 12 * scaleFactor;
+  const kwPadY = 6 * scaleFactor;
+  const kwGap = 8 * scaleFactor;
+  const kwRowH = kwSize + kwPadY * 2;
+  const kwRowGap = 8 * scaleFactor;
+  const imgScale = cfg.imgScale || 1;
+  const imgAr = cfg.img.width / cfg.img.height;
+
+  // Helper: draw centered keyword-pill rows within [colX, colX+colW], starting at startY.
+  // Returns the Y at the bottom of the last row.
+  function drawPills(colX, colW, startY) {
+    const cX = colX + colW / 2;
+    const maxW = colW - 40 * scaleFactor;
+    textFont(fontC); textSize(kwSize); textAlign(LEFT, CENTER);
+    const rows = [];
+    let row = [], rowW = 0;
+    for (const kw of cfg.keywords) {
+      const pillW = textWidth(kw) + kwPadX * 2;
+      const addW = (row.length ? kwGap : 0) + pillW;
+      if (row.length && rowW + addW > maxW) { rows.push({ items: row, w: rowW }); row = []; rowW = 0; }
+      row.push({ kw, pillW });
+      rowW += (row.length > 1 ? kwGap : 0) + pillW;
+    }
+    if (row.length) rows.push({ items: row, w: rowW });
+    let yy = startY;
+    for (const rw of rows) {
+      let xx = cX - rw.w / 2;
+      for (const it of rw.items) {
+        push();
+        fill(255, 255, 255, 50);
+        stroke(234, 255, 151, 120);
+        strokeWeight(1 * scaleFactor);
+        rect(xx, yy, it.pillW, kwRowH, kwRowH / 2);
+        noStroke();
+        fill(234, 255, 151);
+        text(it.kw, xx + kwPadX, yy + kwRowH / 2);
+        pop();
+        xx += it.pillW + kwGap;
+      }
+      yy += kwRowH + kwRowGap;
+    }
+    return yy - kwRowGap;
+  }
+
+  if (cfg.layout === "side") {
+    // ── SIDE-BY-SIDE: a fully-visible tilted image on the left, a normal
+    //    straight left-aligned content column on the right. ──
+    const tilt = cfg.imgTilt !== undefined ? cfg.imgTilt : -0.1;
+    const leftFrac = 0.44;                         // width share for the image side
+    // fit the image (fully visible) into the left region, then scale
+    const regionW = cw * leftFrac - 20 * scaleFactor;
+    const regionH = ch - 60 * scaleFactor;
+    let bw = regionW, bh = bw / imgAr;
+    if (bh > regionH) { bh = regionH; bw = bh * imgAr; }
+    bw *= imgScale; bh *= imgScale;
+    const imgCx = cx + cw * leftFrac * 0.5 + (cfg.imgOffsetX || 0) * scaleFactor;
+    const imgCy = cy + ch / 2 + (cfg.imgOffsetY || 0) * scaleFactor;
+    push();
+    translate(imgCx, imgCy);
+    rotate(tilt);
+    image(cfg.img, -bw / 2, -bh / 2, bw, bh);
+    pop();
+
+    // content column on the right — normal straight left-aligned block
+    const colX = cx + cw * leftFrac + 14 * scaleFactor;
+    const colRight = cx + cw - 24 * scaleFactor;
+    const colW = colRight - colX;
+    let yy = cy + 55 * scaleFactor;
+
+    // keyword pills — left-aligned, wrap within the column
+    textFont(fontC); textSize(kwSize); textAlign(LEFT, CENTER);
+    let kx = colX;
+    for (const kw of cfg.keywords) {
+      const pillW = textWidth(kw) + kwPadX * 2;
+      if (kx + pillW > colRight && kx > colX) { kx = colX; yy += kwRowH + kwRowGap; }
+      push();
+      fill(255, 255, 255, 50);
+      stroke(234, 255, 151, 120);
+      strokeWeight(1 * scaleFactor);
+      rect(kx, yy, pillW, kwRowH, kwRowH / 2);
+      noStroke();
+      fill(234, 255, 151);
+      text(kw, kx + kwPadX, yy + kwRowH / 2);
+      pop();
+      kx += pillW + kwGap;
+    }
+
+    // divider under the pills
+    let ty = yy + kwRowH + 18 * scaleFactor;
+    stroke(255, 255, 255, 45);
+    strokeWeight(0.8 * scaleFactor);
+    line(colX, ty, colRight, ty);
+
+    // title — left-aligned
+    ty += 18 * scaleFactor;
+    noStroke();
+    textFont(font); textSize(34 * scaleFactor); textAlign(LEFT, TOP);
+    fill(hover ? color(234, 255, 151) : color(248, 244, 236));
+    text(cfg.title, colX, ty, colW);
+    const titleLines = textWidth(cfg.title) > colW ? 2 : 1;
+
+    // description — left-aligned
+    ty += 40 * scaleFactor * titleLines + 16 * scaleFactor;
+    textFont(fontB); textSize(20 * scaleFactor); textAlign(LEFT, TOP);
+    fill(248, 244, 236, 220);
+    text(cfg.desc, colX, ty, colW, ch);
+
+  } else {
+    // ── STACKED (default): image top, content bottom ──
+    const inset = 1 * scaleFactor;
+    const topInset = 8 * scaleFactor;
+    const fw = (cw - inset * 2) * imgScale;
+    const fh = fw / imgAr;
+    const fx = cx + (cw - fw) / 2;
+    const fy = cy + topInset + (cfg.imgOffsetY || 0) * scaleFactor;
+    const imgBottom = fy + fh;
+    push();
+    image(cfg.img, fx, fy, fw, fh);
+    pop();
+
+    // divider
+    stroke(255, 255, 255, 45);
+    strokeWeight(0.8 * scaleFactor);
+    line(cx + 20 * scaleFactor, imgBottom + 16 * scaleFactor,
+         cx + cw - 20 * scaleFactor, imgBottom + 16 * scaleFactor);
+
+    // keyword pills (centered rows)
+    noStroke();
+    const centerX = cx + cw / 2;
+    let ky = drawPills(cx, cw, imgBottom + 30 * scaleFactor);
+
+    // title
+    let ty = ky + 16 * scaleFactor;
+    textFont(font); textSize(43 * scaleFactor); textAlign(CENTER, TOP);
+    fill(hover ? color(234, 255, 151) : color(248, 244, 236));
+    text(cfg.title, centerX, ty);
+
+    // description
+    ty += 52 * scaleFactor;
+    textFont(fontB); textSize(23 * scaleFactor); textAlign(CENTER, TOP);
+    fill(248, 244, 236, 220);
+    text(cfg.desc, cx + 30 * scaleFactor, ty, cw - 60 * scaleFactor, textH);
+  }
+
+  pop();
+
+  return { x: cardX, y: cardY, w: cardW, h: cardH };
+}
+
+// All 8 project cards laid out in a grid (3 + 3 + 2).
+// (function name kept for compatibility with the single call in draw())
 function drawBalancingConnections() {
-  // Slightly smaller graphic to open up room for the emerging pills
-  bcImgArea = {
-    x: 90 * scaleFactor,
-    y: 1150 * scaleFactor,
-    w: 880 * scaleFactor,
-    h: 580 * scaleFactor
-  };
-
-  let bcHover =
-    mouseX >= bcImgArea.x && mouseX <= bcImgArea.x + bcImgArea.w &&
-    mouseY >= bcImgArea.y && mouseY <= bcImgArea.y + bcImgArea.h;
-
-  // Frosted-glass keyword pills (emerge from behind the graphic, latch on hover)
-  drawKeywordPills("bc", bcImgArea, [
-    { label: "Human-Centered Design", dx: -230, dy: -230, rot: -0.12 }, // upper left
-    { label: "Spatial Systems",        dx: 300,  dy: -170, rot: 0.10 },  // upper right
-    { label: "Research",               dx: -340, dy: 40,   rot: 0.09 },  // lower left
-    { label: "UX",                     dx: 320,  dy: 40,   rot: -0.08 }  // lower right
-  ]);
-
-  // ── Project graphic (with hover zoom, as before) ───────────────────────────
-  let bcScale = bcHover ? 1.05 : 1;
-  let bcW = bcImgArea.w * bcScale;
-  let bcH = bcImgArea.h * bcScale;
-  let bcX = bcImgArea.x - (bcW - bcImgArea.w) / 2;
-  let bcY = bcImgArea.y - (bcH - bcImgArea.h) / 2;
-
-  push();
-  fill(60);
-  stroke(234, 255, 151);
-  strokeWeight(2);
-  image(BCimg, bcX, bcY, bcW, bcH);
-  pop();
-
-  // ── Title ───────────────────────────────────────────────────────────────
-  textFont(font);
-  textSize(72 * scaleFactor);
-  let titleX = 880 * scaleFactor;
-  let titleY = 1350 * scaleFactor;
-  let titleText = "BALANCING CONNECTIONS";
-  let titleW = textWidth(titleText);
-  let titleH = 72 * scaleFactor * 1.1;
-
-  bcTitleArea = { x: titleX, y: titleY, w: titleW, h: titleH };
-
-  fill(mouseX >= titleX && mouseX <= titleX + titleW &&
-       mouseY >= titleY && mouseY <= titleY + titleH
-    ? color(234, 255, 151) : color(248, 244, 236));
-  text(titleText, titleX, titleY);
-
-  // ── One-line impact statement ─────────────────────────────────────────────
-  textFont(fontB);
-  textSize(34 * scaleFactor);
-  fill(248, 244, 236);
-  text(
-    "I designed playful spatial interventions that turn campus quads into low-pressure spaces where international students actually connect.",
-    880 * scaleFactor, 1320 * scaleFactor, 690 * scaleFactor, 300 * scaleFactor
-  );
-}
-
-function drawMomentsApp() {
-  momentsImgArea = {
-    x: 600 * scaleFactor,
-    y: 1780 * scaleFactor,
-    w: 1000 * scaleFactor,
-    h: 600 * scaleFactor
-  };
-
-  let momentsHover =
-    mouseX >= momentsImgArea.x && mouseX <= momentsImgArea.x + momentsImgArea.w &&
-    mouseY >= momentsImgArea.y && mouseY <= momentsImgArea.y + momentsImgArea.h;
-
-  // Keyword pills (emerge from behind the graphic, latch on hover)
-  drawKeywordPills("moments", momentsImgArea, [
-    { label: "AI-Native",           dx: -100, dy: -310, rot: -0.10 },
-    { label: "Product Design",      dx: 260,  dy: -330, rot: 0.10 },
-    { label: "Preventive Wellness", dx: -350, dy: -190,  rot: 0.08 }
-  ]);
-
-  let momentsScale = momentsHover ? 1.05 : 1;
-  let momentsW = momentsImgArea.w * momentsScale;
-  let momentsH = momentsImgArea.h * momentsScale;
-  let momentsX = momentsImgArea.x - (momentsW - momentsImgArea.w) / 2;
-  let momentsY = momentsImgArea.y - (momentsH - momentsImgArea.h) / 2;
-
-  push();
-  fill(60);
-  stroke(234, 255, 151);
-  strokeWeight(2);
-  image(MAimg, momentsX, momentsY, momentsW, momentsH);
-  pop();
-
-  textFont(font);
-  textSize(72 * scaleFactor);
-  let titleX = 180 * scaleFactor;
-  let titleY = 1930 * scaleFactor;
-  let titleText = "MOMENTS APP";
-  let titleW = textWidth(titleText);
-  let titleH = 72 * scaleFactor * 1.1;
-
-  momentsTitleArea = { x: titleX, y: titleY, w: titleW, h: titleH };
-
-  fill(mouseX >= titleX && mouseX <= titleX + titleW &&
-       mouseY >= titleY && mouseY <= titleY + titleH
-    ? color(234, 255, 151) : color(248, 244, 236));
-  text(titleText, titleX, titleY);
-
-  textFont(fontB);
-  textSize(34 * scaleFactor);
-  fill(248, 244, 236);
-  text(
-    "I reframed digital distraction as a moment for mindfulness, designing an AI-first wellness app that turns idle screen time into emotional resilience.",
-    180 * scaleFactor, 1920 * scaleFactor, 640 * scaleFactor, 300 * scaleFactor
-  );
-}
-
-function drawSoundAid() {
-  saImgArea = {
-    x: -100 * scaleFactor,
-    y: 2380 * scaleFactor,
-    w: 1200 * scaleFactor,
-    h: 700 * scaleFactor
-  };
-
-  let saHover =
-    mouseX >= saImgArea.x && mouseX <= saImgArea.x + saImgArea.w &&
-    mouseY >= saImgArea.y && mouseY <= saImgArea.y + saImgArea.h;
-
-  // Keyword pills (emerge from behind the graphic, latch on hover)
-  drawKeywordPills("sa", saImgArea, [
-    { label: "Accessibility", dx: 10, dy: -340, rot: -0.10 },
-    { label: "Auditory UX",   dx: 250,  dy: -220, rot: 0.10 },
-    { label: "Prototyping",   dx: -330, dy: -340,  rot: 0.09 },
-    { label: "User Testing",  dx: -270,  dy: 260,  rot: -0.08 }
-  ], { originFracX: 0.5, originFracY: 0.5 });
-
-  let saScale = saHover ? 1.05 : 1;
-  let saW = saImgArea.w * saScale;
-  let saH = saImgArea.h * saScale;
-  let saX = saImgArea.x - (saW - saImgArea.w) / 2;
-  let saY = saImgArea.y - (saH - saImgArea.h) / 2;
-
-  push();
-  stroke(234, 255, 151);
-  strokeWeight(2);
-  image(SAimg, saX, saY, saW, saH);
-  pop();
-
-  textFont(font);
-  textSize(72 * scaleFactor);
-  let titleX = 880 * scaleFactor;
-  let titleY = 2640 * scaleFactor;
-  let titleText = "SOUND AID";
-  let titleW = textWidth(titleText);
-  let titleH = 72 * scaleFactor * 1.1;
-
-  saTitleArea = { x: titleX, y: titleY, w: titleW, h: titleH };
-
-  fill(mouseX >= titleX && mouseX <= titleX + titleW &&
-       mouseY >= titleY && mouseY <= titleY + titleH
-    ? color(234, 255, 151) : color(248, 244, 236));
-  text(titleText, titleX, titleY);
-
-  textFont(fontB);
-  textSize(34 * scaleFactor);
-  fill(248, 244, 236);
-  text(
-    "I designed sound-based interactions that help people with visual impairments navigate complex environments with confidence.",
-    880 * scaleFactor, 2630 * scaleFactor, 640 * scaleFactor, 300 * scaleFactor
-  );
-}
-
-function drawProject1() {
-  // HASTASHILP
-  hsImgArea = {
-    x: 90 * scaleFactor,
-    y: 3220 * scaleFactor,
-    w: 750 * scaleFactor,
-    h: 550 * scaleFactor
-  };
-
-  let hsHover =
-    mouseX >= hsImgArea.x && mouseX <= hsImgArea.x + hsImgArea.w &&
-    mouseY >= hsImgArea.y && mouseY <= hsImgArea.y + hsImgArea.h;
-
-  // Keyword pills (emerge from behind the graphic, latch on hover)
-  drawKeywordPills("hs", hsImgArea, [
-    { label: "Game Design",      dx: -20, dy: -300, rot: -0.10 },
-    { label: "Cultural Heritage", dx: 380,  dy: -320, rot: 0.10 },
-    { label: "Systems Design",   dx: -120, dy: 360,  rot: 0.09 },
-    { label: "Illustration",     dx: 520,  dy: 150,  rot: -0.08 }
-  ]);
-
-  let hsScale = hsHover ? 1.05 : 1;
-  let hsW = hsImgArea.w * hsScale;
-  let hsH = hsImgArea.h * hsScale;
-  let hsX = hsImgArea.x - (hsW - hsImgArea.w) / 2;
-  let hsY = hsImgArea.y - (hsH - hsImgArea.h) / 2;
-
-  image(HSimg, hsX, hsY, hsW, hsH);
-
-  textFont(font);
-  textSize(72 * scaleFactor);
-  let titleX = 880 * scaleFactor;
-  let titleY = 3350 * scaleFactor;
-  let titleText = "HASTASHILP";
-  let titleW = textWidth(titleText);
-  let titleH = 72 * scaleFactor * 1.1;
-
-  hsTitleArea = { x: titleX, y: titleY, w: titleW, h: titleH };
-
-  fill(mouseX >= titleX && mouseX <= titleX + titleW &&
-       mouseY >= titleY && mouseY <= titleY + titleH
-    ? color(234, 255, 151) : color(248, 244, 236));
-  text(titleText, titleX, titleY);
-
-  textFont(fontB);
-  textSize(34 * scaleFactor);
-  fill(248, 244, 236);
-  text(
-    "I designed a card game that reconnects young adults with India's 500+ traditional crafts through learning-through-play.",
-    880 * scaleFactor, 3325 * scaleFactor, 640 * scaleFactor, 300 * scaleFactor
-  );
-}
-
-function drawProject2() {
-  // HOSHRUBA
-  hoshImgArea = {
-    x: 800 * scaleFactor,
-    y: 3700 * scaleFactor,
-    w: 700 * scaleFactor,
-    h: 790 * scaleFactor
-  };
-
-  let hoshHover =
-    mouseX >= hoshImgArea.x && mouseX <= hoshImgArea.x + hoshImgArea.w &&
-    mouseY >= hoshImgArea.y && mouseY <= hoshImgArea.y + hoshImgArea.h;
-
-  // Keyword pills (emerge from behind the graphic, latch on hover)
-  drawKeywordPills("hosh", hoshImgArea, [
-    { label: "Visual Storytelling", dx: -180, dy: -180, rot: -0.10 },
-    { label: "Narrative Design",    dx: 300,  dy: -180, rot: 0.10 },
-    { label: "Illustration",        dx: -400, dy: 300,  rot: 0.09 },
-    { label: "Poetry",              dx: 420,  dy: 340,  rot: -0.08 }
-  ]);
-
-  let hoshScale = hoshHover ? 1.05 : 1;
-  let hoshW = hoshImgArea.w * hoshScale;
-  let hoshH = hoshImgArea.h * hoshScale;
-  let hoshX = hoshImgArea.x - (hoshW - hoshImgArea.w) / 2;
-  let hoshY = hoshImgArea.y - (hoshH - hoshImgArea.h) / 2;
-
-  image(Hoshimg, hoshX, hoshY, hoshW, hoshH);
-
-  textFont(font);
-  textSize(72 * scaleFactor);
-  let hTitleX = 180 * scaleFactor;
-  let hTitleY = 4030 * scaleFactor;
-  let hTitleText = "Angry God's Dilemma";
-  let hTitleW = textWidth(hTitleText);
-  let hTitleH = 72 * scaleFactor * 1.1;
-
-  hoshTitleArea = { x: hTitleX, y: hTitleY, w: hTitleW, h: hTitleH };
-
-  fill(mouseX >= hTitleX && mouseX <= hTitleX + hTitleW &&
-       mouseY >= hTitleY && mouseY <= hTitleY + hTitleH
-    ? color(234, 255, 151) : color(248, 244, 236));
-  text(hTitleText, hTitleX, hTitleY);
-
-  textFont(fontB);
-  textSize(34 * scaleFactor);
-  fill(248, 244, 236);
-  text(
-    "I reimagined magical excerpts from Tilism-e-Hoshruba to spark reflection on identity, gender, and self-acceptance in the world today.",
-    180 * scaleFactor, 4040 * scaleFactor, 480 * scaleFactor, 300 * scaleFactor
-  );
-}
-
-function drawProject3() {
-  // DAREDEVIL
-  ddImgArea = {
-    x: -40 * scaleFactor,
-    y: 4420 * scaleFactor,
-    w: 1060 * scaleFactor,
-    h: 730 * scaleFactor
-  };
-
-  let ddHover =
-    mouseX >= ddImgArea.x && mouseX <= ddImgArea.x + ddImgArea.w &&
-    mouseY >= ddImgArea.y && mouseY <= ddImgArea.y + ddImgArea.h;
-
-  // Keyword pills (emerge from behind the graphic, latch on hover)
-  drawKeywordPills("dd", ddImgArea, [
-    { label: "Branding",        dx: -230, dy: -320, rot: -0.10 },
-    { label: "Packaging Design", dx: 230,  dy: -340, rot: 0.10 },
-    { label: "Visual Identity", dx: -280, dy: 300,  rot: 0.09 },
-    { label: "Logo",            dx: 300,  dy: 260,  rot: -0.08 }
-  ], { originFracX: 0.5, originFracY: 0.5 });
-
-  let ddScale = ddHover ? 1.05 : 1;
-  let ddW = ddImgArea.w * ddScale;
-  let ddH = ddImgArea.h * ddScale;
-  let ddX = ddImgArea.x - (ddW - ddImgArea.w) / 2;
-  let ddY = ddImgArea.y - (ddH - ddImgArea.h) / 2;
-
-  image(DDimg, ddX, ddY, ddW, ddH);
-
-  textFont(font);
-  textSize(72 * scaleFactor);
-  let titleX = 880 * scaleFactor;
-  let titleY = 4750 * scaleFactor;
-  let titleText = "DAREDEVIL Brewing Co.";
-  let titleW = textWidth(titleText);
-  let titleH = 72 * scaleFactor * 1.1;
-
-  ddTitleArea = { x: titleX, y: titleY, w: titleW, h: titleH };
-
-  fill(mouseX >= titleX && mouseX <= titleX + titleW &&
-       mouseY >= titleY && mouseY <= titleY + titleH
-    ? color(234, 255, 151) : color(248, 244, 236));
-  text(titleText, titleX, titleY);
-
-  textFont(fontB);
-  textSize(34 * scaleFactor);
-  fill(248, 244, 236);
-  text(
-    "I built a bold visual identity and packaging system that gives the Daredevil beer brand a striking, memorable shelf presence.",
-    880 * scaleFactor, 4715 * scaleFactor, 640 * scaleFactor, 300 * scaleFactor
-  );
-}
-
-function drawProject4() {
-  // PRINT PRODUCTION
-  ppImgArea = {
-    x: 700 * scaleFactor,
-    y: 5200 * scaleFactor,
-    w: 820 * scaleFactor,
-    h: 730 * scaleFactor
-  };
-
-  let ppHover =
-    mouseX >= ppImgArea.x && mouseX <= ppImgArea.x + ppImgArea.w &&
-    mouseY >= ppImgArea.y && mouseY <= ppImgArea.y + ppImgArea.h;
-
-  // Keyword pills (emerge from behind the graphic, latch on hover)
-  drawKeywordPills("pp", ppImgArea, [
-    { label: "Print Design", dx: -300, dy: -190, rot: -0.10 },
-    { label: "Research",     dx: 380,  dy: -280, rot: 0.10 },
-    { label: "Editorial",    dx: -280, dy: 200,  rot: 0.09 },
-    { label: "Field Study",  dx: 330,  dy: 320,  rot: -0.08 }
-  ]);
-
-  let ppScale = ppHover ? 1.05 : 1;
-  let ppW = ppImgArea.w * ppScale;
-  let ppH = ppImgArea.h * ppScale;
-  let ppX = ppImgArea.x - (ppW - ppImgArea.w) / 2;
-  let ppY = ppImgArea.y - (ppH - ppImgArea.h) / 2;
-
-  image(PPimg, ppX, ppY, ppW, ppH);
-
-  textFont(font);
-  textSize(72 * scaleFactor);
-  let titleX = 180 * scaleFactor;
-  let titleY = 5450 * scaleFactor;
-  let titleText = "PRINT PRODUCTION";
-  let titleW = textWidth(titleText);
-  let titleH = 72 * scaleFactor * 1.1;
-
-  ppTitleArea = { x: titleX, y: titleY, w: titleW, h: titleH };
-
-  fill(mouseX >= titleX && mouseX <= titleX + titleW &&
-       mouseY >= titleY && mouseY <= titleY + titleH
-    ? color(234, 255, 151) : color(248, 244, 236));
-  text(titleText, titleX, titleY);
-
-  textFont(fontB);
-  textSize(34 * scaleFactor);
-  fill(248, 244, 236);
-  text(
-    "I documented Bangalore's dense print-workshop ecosystem in a research-led book blending field study, visuals, and real print samples.",
-    180 * scaleFactor, 5460 * scaleFactor, 480 * scaleFactor, 300 * scaleFactor
-  );
-}
-
-function drawProject5() {
-  // MERCEDES BENZ
-  MBimgArea = {
-    x: 270 * scaleFactor,
-    y: 5900 * scaleFactor,
-    w: 500 * scaleFactor,
-    h: 800 * scaleFactor,
-  };
-
-  let bbHover =
-    mouseX >= MBimgArea.x && mouseX <= MBimgArea.x + MBimgArea.w &&
-    mouseY >= MBimgArea.y && mouseY <= MBimgArea.y + MBimgArea.h;
-
-  // Keyword pills (emerge from behind the graphic, latch on hover)
-  drawKeywordPills("mb", MBimgArea, [
-    { label: "Product Design",     dx: -260, dy: -260, rot: -0.10 },
-    { label: "Interaction Design", dx: -250,  dy: -160, rot: 0.10 },
-    { label: "Automotive",         dx: -260, dy: 10,  rot: 0.09 },
-    { label: "Concept",            dx: -250,  dy: -80,  rot: -0.08 }
-  ]);
-
-  let bbScale = bbHover ? 1.05 : 1;
-  let bbW = MBimgArea.w * bbScale;
-  let bbH = MBimgArea.h * bbScale;
-  let bbX = MBimgArea.x - (bbW - MBimgArea.w) / 2;
-  let bbY = MBimgArea.y - (bbH - MBimgArea.h) / 2;
-
-  image(MBimg, bbX, bbY, bbW, bbH);
-
-  textFont(font);
-  textSize(72 * scaleFactor);
-  let titleX = 880 * scaleFactor;
-  let titleY = 6150 * scaleFactor;
-  let titleText = "Mercedes Benz R&D";
-  let titleW = textWidth(titleText);
-  let titleH = 72 * scaleFactor * 1.1;
-
-  bbTitleArea = { x: titleX, y: titleY, w: titleW, h: titleH };
-
-  fill(mouseX >= titleX && mouseX <= titleX + titleW &&
-       mouseY >= titleY && mouseY <= titleY + titleH
-    ? color(234, 255, 151) : color(248, 244, 236));
-  text(titleText, titleX, titleY);
-
-  textFont(fontB);
-  textSize(34 * scaleFactor);
-  fill(248, 244, 236);
-  text(
-    "I reimagined the Mercedes-AMG Track Pace app so racing data can be felt as shareable, emotional stories, not just viewed.",
-    880 * scaleFactor, 6125 * scaleFactor, 640 * scaleFactor, 300 * scaleFactor
-  );
+  const cardW = 440 * scaleFactor;
+  const cardH = 600 * scaleFactor;
+  const cardH2 = 680 * scaleFactor;  // taller cards for row 2
+  const gap = 40 * scaleFactor;
+  const rowGap = 90 * scaleFactor;
+  const rowW = cardW * 3 + gap * 2;
+  const startX = (width - rowW) / 2;
+  const col = (i) => startX + i * (cardW + gap);
+  const row1Y = 1150 * scaleFactor;
+  const row2Y = row1Y + cardH + rowGap;
+  const row3Y = row2Y + cardH2 + rowGap;
+
+  // ── Row 1 ──
+  bcImgArea = bcTitleArea = drawProjectCard({
+    x: col(0), y: row1Y, w: cardW, h: cardH, img: BCimg,
+    keywords: ["Human-Centered Design", "Spatial Systems", "Research", "UX"],
+    title: "BALANCING CONNECTIONS",
+    desc: "Playful spatial interventions that turn campus quads into low-pressure spaces where students connect."
+  });
+  momentsImgArea = momentsTitleArea = drawProjectCard({
+    x: col(1), y: row1Y, w: cardW, h: cardH, img: MAimg, imgScale: 0.94, imgOffsetY: 30,
+    keywords: ["AI-Native", "Product Design", "Preventive Wellness"],
+    title: "MOMENTS APP",
+    desc: "An AI-first wellness app that reframes idle screen time into moments of mindfulness and resilience."
+  });
+  saImgArea = saTitleArea = drawProjectCard({
+    x: col(2), y: row1Y, w: cardW, h: cardH, img: SAimg, imgScale: 1.16,
+    keywords: ["Accessibility", "Auditory UX", "Prototyping", "User Testing"],
+    title: "SOUND AID",
+    desc: "Sound-based interactions that help people with visual impairments navigate complex spaces with confidence."
+  });
+
+  // ── Row 2 (taller cards) ──
+  hsImgArea = hsTitleArea = drawProjectCard({
+    x: col(0), y: row2Y, w: cardW, h: cardH2, img: HSimg, imgOffsetY: 45,
+    keywords: ["Game Design", "Cultural Heritage", "Systems Design", "Illustration"],
+    title: "HASTASHILP",
+    desc: "A card game that reconnects young adults with India's 500+ traditional crafts through learning-through-play."
+  });
+  hoshImgArea = hoshTitleArea = drawProjectCard({
+    x: col(1), y: row2Y, w: cardW, h: cardH2, img: Hoshimg, imgScale: 0.95, imgOffsetY: -120,
+    keywords: ["Visual Storytelling", "Narrative Design", "Illustration", "Poetry"],
+    title: "ANGRY GOD'S DILEMMA",
+    desc: "A reimagining of Tilism-e-Hoshruba that sparks reflection on identity, gender, and self-acceptance today."
+  });
+  ddImgArea = ddTitleArea = drawProjectCard({
+    x: col(2), y: row2Y, w: cardW, h: cardH2, img: DDimg, imgScale: 1.22, imgOffsetY: 30,
+    keywords: ["Branding", "Packaging Design", "Visual Identity", "Logo"],
+    title: "DAREDEVIL Brewing Co.",
+    desc: "A bold visual identity and packaging system that gives the Daredevil beer brand a striking shelf presence."
+  });
+
+  // ── Row 3 (2 cards, centered, taller) ──
+  const cardH3 = 700 * scaleFactor;
+  const row3StartX = (width - (cardW * 2 + gap)) / 2;
+  ppImgArea = ppTitleArea = drawProjectCard({
+    x: row3StartX, y: row3Y, w: cardW, h: cardH3, img: PPimg,
+    keywords: ["Print Design", "Research", "Editorial", "Field Study"],
+    title: "PRINT PRODUCTION",
+    desc: "A research-led book documenting Bangalore's dense print-workshop ecosystem, with real print samples."
+  });
+  MBimgArea = bbTitleArea = drawProjectCard({
+    x: row3StartX + (cardW + gap), y: row3Y, w: cardW, h: cardH3, img: MBimg,
+    layout: "side", imgScale: 1.05, imgTilt: -0.1,
+    keywords: ["Product Design", "Interaction Design", "Automotive", "Concept"],
+    title: "Mercedes Benz R&D",
+    desc: "A reimagined Mercedes-AMG Track Pace app that turns racing data into shareable, emotional stories."
+  });
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
