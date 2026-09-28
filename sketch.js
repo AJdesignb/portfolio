@@ -253,7 +253,12 @@ function draw() {
     saImgArea, saTitleArea, hsImgArea, hsTitleArea, hoshImgArea, hoshTitleArea,
     ddImgArea, ddTitleArea, hwImgArea, hwTitleArea, ppImgArea, ppTitleArea,
     MBimgArea, bbTitleArea];
-  for (const a of _areas) { if (a && a.y !== undefined) a.y += _areaShift; }
+  // Each card assigns imgArea === titleArea (same object), so dedupe to avoid
+  // shifting the same hit-area twice (which pushed it off the card → dead clicks).
+  const _seen = new Set();
+  for (const a of _areas) {
+    if (a && a.y !== undefined && !_seen.has(a)) { a.y += _areaShift; _seen.add(a); }
+  }
 
   let isHovering = false;
 
