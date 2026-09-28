@@ -24,6 +24,12 @@ let Insta;
 
 let IllusR;
 
+// Brand logos
+let logoAmazon;
+let logoABI;
+let logoCorona;
+let logoHoegaarden;
+
 let skillWords = [];
 let SKILL_TEXT_SIZE = 96;
 
@@ -38,6 +44,16 @@ const printLink = "printproduction.html";
 // Per-project keyword-pill state, keyed by project id.
 // { reveal: 0..1 eased opacity/offset, open: latched bool }
 let pillState = {};
+
+// Brand-logo hover reveal amounts (eased 0..1), keyed by brand id
+let brandHover = {};
+// How far the content below the logos is pushed down while a card is open
+let contentPush = 0;
+let contentPushVel = 0; // velocity, for a springy bounce
+
+// Typewriter animation for the brands label
+let brandLabelChars = 0;      // how many chars revealed so far
+let brandLabelStarted = false; // becomes true once section scrolls into view
 
 let bcImgArea = {};
 let bcTitleArea = {};
@@ -61,7 +77,7 @@ const STAR_COUNT = 600;
 
 let scaleFactor = 1;
 let canvasWidth = 1600;
-let canvasHeight = 7170;
+let canvasHeight = 7320;
 
 function preload() {
   font = loadFont("Rosean.ttf");
@@ -83,6 +99,11 @@ function preload() {
   GitHb = loadImage("GhubL.png");
   Insta = loadImage("Insta.png");
   IllusR = loadImage("IllusR.png");
+
+  logoAmazon      = loadImage("Amzn.png");
+  logoABI         = loadImage("Abi Logo.png");
+  logoCorona      = loadImage("Corona White Logo.png");
+  logoHoegaarden  = loadImage("Hoegaarden Logo PMS.png");
 }
 
 function setup() {
@@ -106,7 +127,7 @@ function setup() {
 
 function calculateCanvasSize() {
   const baseWidth = 1600;
-  const baseHeight = 7170;
+  const baseHeight = 7320;
   
   if (windowWidth < 768) {
     scaleFactor = 0.4;
@@ -126,7 +147,7 @@ function calculateCanvasSize() {
     canvasHeight = baseHeight;
   }
   
-  SKILL_TEXT_SIZE = 94 * scaleFactor;
+  SKILL_TEXT_SIZE = 64 * scaleFactor;
 }
 
 function windowResized() {
@@ -152,7 +173,7 @@ function setupSkillWords() {
   textSize(SKILL_TEXT_SIZE);
   textAlign(LEFT, TOP);
 
-  const skillText = "Interaction Design · Product & UX Design · Graphic Design · Creative Strategy · AI & Design · Visual Storytelling · Illustrations · ";
+  const skillText = "Product Design · UX / UI · Interaction Design · Design Systems · Prototyping · Branding & Visual Identity · AI-Driven Design · Illustration · ";
   
   const tokens = skillText.split(" ");
   let x = 0;
@@ -198,6 +219,23 @@ function draw() {
   image(Starimg, 910 * scaleFactor, 135 * scaleFactor, 130 * scaleFactor, 130 * scaleFactor);
 
   drawSkillWords();
+  drawBrandLogos();
+
+  // Spring the content below the logos down while a brand card is open,
+  // and let it bounce back when the card closes.
+  let anyBrandOpen = 0;
+  for (const k in brandHover) anyBrandOpen = max(anyBrandOpen, brandHover[k]);
+  const pushTarget = anyBrandOpen * 175 * scaleFactor;
+  // simple spring for a bouncy settle
+  const stiffness = 0.12, damping = 0.72;
+  contentPushVel += (pushTarget - contentPush) * stiffness;
+  contentPushVel *= damping;
+  contentPush += contentPushVel;
+
+  // Fixed downward offset for the whole project section, to clear the logo row
+  const projectsBaseOffset = 100 * scaleFactor;
+  push();
+  translate(0, contentPush + projectsBaseOffset);
   drawBalancingConnections();  
   drawMomentsApp();
   drawSoundAid();
@@ -206,38 +244,25 @@ function draw() {
   drawProject3();
   drawProject4();
   drawProject5();
-  
-  // GitHub repo bar
-  let githubX = 10 * scaleFactor;
-  let githubY = 1027 * scaleFactor;
-  let githubW = 1580 * scaleFactor;
-  let githubH = 60 * scaleFactor;
-  
-  let githubHover = 
-    mouseX >= githubX &&
-    mouseX <= githubX + githubW &&
-    mouseY >= githubY &&
-    mouseY <= githubY + githubH;
-  
-  stroke(234, 255, 151);
-  strokeWeight(1);
-  fill(githubHover ? color(234, 255, 151) : color(0));
-  rect(githubX, githubY, githubW, githubH);
-  
-  textSize(43 * scaleFactor);
-  textFont(fontC);
-  fill(githubHover ? color(0) : color(234, 255, 151));
-  text(
-    "//Check out some of my Coding Explorations on my Github repo.", 
-    15 * scaleFactor, 
-    1050 * scaleFactor
-  );
-  
+  pop();
+
+  // Shift all project hit-areas by the same offset so clicks/hovers stay aligned
+  const _areaShift = contentPush + projectsBaseOffset;
+  const _areas = [bcImgArea, bcTitleArea, momentsImgArea, momentsTitleArea,
+    saImgArea, saTitleArea, hsImgArea, hsTitleArea, hoshImgArea, hoshTitleArea,
+    ddImgArea, ddTitleArea, ppImgArea, ppTitleArea, MBimgArea, bbTitleArea];
+  for (const a of _areas) { if (a && a.y !== undefined) a.y += _areaShift; }
+
   let isHovering = false;
 
-  if (mouseX >= githubX && mouseX <= githubX + githubW &&
-      mouseY >= githubY && mouseY <= githubY + githubH) {
-    isHovering = true;
+  if (window.brandAreas) {
+    for (const a of window.brandAreas) {
+      if (a && mouseX >= a.x && mouseX <= a.x + a.w &&
+          mouseY >= a.y && mouseY <= a.y + a.h) {
+        isHovering = true;
+        break;
+      }
+    }
   }
 
   if (mouseX >= bcImgArea.x && mouseX <= bcImgArea.x + bcImgArea.w &&
@@ -330,6 +355,8 @@ function draw() {
     isHovering = true;
   }
 
+  push();
+  translate(0, contentPush + projectsBaseOffset);
   image(
     IllusR,
     0 * scaleFactor,
@@ -337,6 +364,7 @@ function draw() {
     1600 * scaleFactor, 
     650 * scaleFactor
   );
+  pop();
 
   cursor(isHovering ? HAND : ARROW);
 }
@@ -433,6 +461,175 @@ function drawKeywordPills(id, imgArea, pills, opts) {
     const py = originY + ease * pills[i].dy * scaleFactor;
     drawFrostedPill(px, py, pills[i].label, ease, (pills[i].rot || 0) * ease);
   }
+}
+
+// ── Brands I've worked with ─────────────────────────────────────────────────
+// A row of 4 logos on frosted plates. On hover a plate lifts/brightens and a
+// frosted card with bullet pointers fades in below it.
+function drawBrandLogos() {
+  const brands = [
+    {
+      id: "amazon", img: logoAmazon, fit: 1.0,
+      role: "Graphic & UX Designer",
+      bullets: ["UX for 5+ global marketplaces",
+                "Journey maps, flows, prototypes",
+                "Streamlined UPI payment flows"]
+    },
+    {
+      id: "abi", img: logoABI, fit: 1.0,
+      role: "Sr. Graphic Designer",
+      bullets: ["Brand systems, typography & packaging",
+                "Campaign toolkits",
+                "Retail + digital campaigns"]
+    },
+    {
+      id: "corona", img: logoCorona, fit: 1.25,
+      role: "under AB InBev",
+      bullets: ["50+ festival visuals & spaces",
+                "Immersive brand experiences",
+                "Social media marketing"]
+    },
+    {
+      id: "hoegaarden", img: logoHoegaarden, fit: 1.2,
+      role: "under AB InBev",
+      bullets: ["Visual & experiential design",
+                "Brand partnership storyboarding",
+                "Social media marketing"]
+    }
+  ];
+
+  // Section label with a one-time typewriter animation
+  const labelFull = "//Brands I've worked with";
+  const labelY = 1010 * scaleFactor;
+
+  // Start typing once the label scrolls into view
+  const labelScreenY = labelY - (window.scrollY || 0);
+  const vh = window.innerHeight || height;
+  if (!brandLabelStarted && labelScreenY < vh * 0.9 && labelScreenY > 0) {
+    brandLabelStarted = true;
+  }
+
+  if (brandLabelStarted && brandLabelChars < labelFull.length) {
+    brandLabelChars += 0.12; // typing speed (chars per frame)
+  }
+
+  const shownCount = Math.min(Math.floor(brandLabelChars), labelFull.length);
+  let shown = labelFull.substring(0, shownCount);
+  // blinking cursor while typing, and briefly after
+  const typing = brandLabelChars < labelFull.length;
+  const blink = floor(frameCount / 45) % 2 === 0;
+  if (brandLabelStarted && (typing || blink)) shown += "_";
+
+  push();
+  textFont(fontC);
+  textSize(26 * scaleFactor);
+  textAlign(CENTER, TOP);
+  fill(234, 255, 151);
+  text(shown, width / 2, labelY);
+  pop();
+
+  // Layout: 4 evenly spaced plates
+  const plateW = 280 * scaleFactor;
+  const plateH = 95 * scaleFactor;
+  const gap = 40 * scaleFactor;
+  const totalW = brands.length * plateW + (brands.length - 1) * gap;
+  let startX = (width - totalW) / 2;
+  const plateY = 1060 * scaleFactor;
+
+  for (let i = 0; i < brands.length; i++) {
+    const b = brands[i];
+    const px = startX + i * (plateW + gap);
+
+    const hover =
+      mouseX >= px && mouseX <= px + plateW &&
+      mouseY >= plateY && mouseY <= plateY + plateH;
+
+    // ease hover amount
+    if (brandHover[b.id] === undefined) brandHover[b.id] = 0;
+    brandHover[b.id] = lerp(brandHover[b.id], hover ? 1 : 0, 0.15);
+    const h = brandHover[b.id];
+
+    // store hit area for cursor logic
+    b._area = { x: px, y: plateY, w: plateW, h: plateH };
+
+    const lift = h * -8 * scaleFactor;
+    const r = 22 * scaleFactor; // pill-like rounded radius
+
+    push();
+    // frosted-glass plate — same language as the keyword pills (visible idle)
+    // soft drop shadow
+    noStroke();
+    fill(0, 0, 0, 55 + 25 * h);
+    rect(px, plateY + 5 * scaleFactor + lift, plateW, plateH, r);
+    // translucent white body + subtle border
+    fill(255, 255, 255, 42 + 18 * h);
+    stroke(255, 255, 255, 55 + 45 * h);
+    strokeWeight(0.8 * scaleFactor);
+    rect(px, plateY + lift, plateW, plateH, r);
+    // top sheen highlight
+    noStroke();
+    fill(255, 255, 255, 30 + 15 * h);
+    rect(px + 3 * scaleFactor, plateY + lift + 3 * scaleFactor,
+         plateW - 6 * scaleFactor, plateH * 0.42, r);
+    pop();
+
+    // logo, contained within the plate with padding, preserving aspect ratio
+    if (b.img) {
+      const pad = 22 * scaleFactor;
+      const maxW = (plateW - pad * 2) * (b.fit || 1);
+      const maxH = (plateH - pad * 2) * (b.fit || 1);
+      const iw = b.img.width, ih = b.img.height;
+      const scale = Math.min(maxW / iw, maxH / ih);
+      const dw = iw * scale, dh = ih * scale;
+      const dx = px + (plateW - dw) / 2;
+      const dy = plateY + lift + (plateH - dh) / 2;
+      push();
+      tint(255, 200 + 55 * h); // slightly brighter on hover
+      image(b.img, dx, dy, dw, dh);
+      pop();
+    }
+
+    // hover card with role + bullet pointers
+    if (h > 0.02) {
+      const cardW = plateW + 110 * scaleFactor;
+      const cardX = px - 55 * scaleFactor;
+      const cardY = plateY + plateH + 14 * scaleFactor + lift;
+      const cardH = 150 * scaleFactor;
+      const a = h;
+
+      push();
+      noStroke();
+      fill(0, 0, 0, 70 * a);
+      rect(cardX, cardY + 4 * scaleFactor, cardW, cardH, 14 * scaleFactor);
+      fill(255, 255, 255, 42 * a);
+      stroke(255, 255, 255, 55 * a);
+      strokeWeight(0.8 * scaleFactor);
+      rect(cardX, cardY, cardW, cardH, 14 * scaleFactor);
+
+      const padX = 20 * scaleFactor;
+      let ty = cardY + 14 * scaleFactor;
+
+      // role subheading
+      noStroke();
+      textFont(fontC);
+      textAlign(LEFT, TOP);
+      textSize(13 * scaleFactor);
+      fill(255, 255, 255, 255 * a);
+      text(b.role, cardX + padX, ty);
+      ty += 24 * scaleFactor;
+
+      // bullets — small, readable (single line each)
+      textSize(14 * scaleFactor);
+      fill(234, 255, 151, 255 * a);
+      for (const line of b.bullets) {
+        text("• " + line, cardX + padX, ty);
+        ty += 28 * scaleFactor;
+      }
+      pop();
+    }
+  }
+
+  window.brandAreas = brands.map(b => b._area).filter(Boolean);
 }
 
 function drawBalancingConnections() {
@@ -941,17 +1138,6 @@ function drawSkillWords() {
 // ─────────────────────────────────────────────────────────────────────────────
 
 function mousePressed() {
-  // GitHub bar
-  let githubX = 10 * scaleFactor;
-  let githubY = 1027 * scaleFactor;
-  let githubW = 1580 * scaleFactor;
-  let githubH = 60 * scaleFactor;
-  if (mouseX >= githubX && mouseX <= githubX + githubW &&
-      mouseY >= githubY && mouseY <= githubY + githubH) {
-    window.open('https://ajdesignb.github.io/AJ-Github/', '_blank');
-    return;
-  }
-
   // Balancing Connections
   if (mouseX >= bcImgArea.x && mouseX <= bcImgArea.x + bcImgArea.w &&
       mouseY >= bcImgArea.y && mouseY <= bcImgArea.y + bcImgArea.h) {
