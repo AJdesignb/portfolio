@@ -47,6 +47,8 @@ let pillState = {};
 
 // Brand-logo hover reveal amounts (eased 0..1), keyed by brand id
 let brandHover = {};
+// Project-card hover amounts (eased 0..1), keyed by card title
+let cardHover = {};
 // How far the content below the logos is pushed down while a card is open
 let contentPush = 0;
 let contentPushVel = 0; // velocity, for a springy bounce
@@ -548,15 +550,31 @@ function drawBrandLogos() {
     const lift = h * -8 * scaleFactor;
     const r = 22 * scaleFactor; // pill-like rounded radius
 
+    const glow = [234, 255, 151]; // lime — matches the hover card
+
     push();
     // frosted-glass plate — same language as the keyword pills (visible idle)
     // soft drop shadow
     noStroke();
     fill(0, 0, 0, 55 + 25 * h);
     rect(px, plateY + 5 * scaleFactor + lift, plateW, plateH, r);
-    // translucent white body + subtle border
-    fill(255, 255, 255, 42 + 18 * h);
-    stroke(255, 255, 255, 55 + 45 * h);
+
+    // themed edge glow on hover (fades in with h) — soft & diffuse
+    if (h > 0.02) {
+      push();
+      drawingContext.shadowBlur = 40 * scaleFactor * h;
+      drawingContext.shadowColor = `rgba(${glow[0]}, ${glow[1]}, ${glow[2]}, ${0.55 * h})`;
+      noFill();
+      stroke(glow[0], glow[1], glow[2], 110 * h);
+      strokeWeight(1.4 * scaleFactor);
+      rect(px, plateY + lift, plateW, plateH, r);
+      drawingContext.shadowBlur = 0;
+      pop();
+    }
+
+    // body + border — tint toward lime as hover increases
+    fill(lerp(255, glow[0], h), lerp(255, glow[1], h), lerp(255, glow[2], h), 42 + 18 * h);
+    stroke(lerp(255, glow[0], h), lerp(255, glow[1], h), lerp(255, glow[2], h), 55 + 100 * h);
     strokeWeight(0.8 * scaleFactor);
     rect(px, plateY + lift, plateW, plateH, r);
     // top sheen highlight
@@ -635,36 +653,64 @@ function drawProjectCard(cfg) {
   const r = 26 * scaleFactor;
   const textH = cardH - cardH * 0.74;
 
-  const hover =
+  const isOver =
     mouseX >= cardX && mouseX <= cardX + cardW &&
     mouseY >= cardY && mouseY <= cardY + cardH;
 
-  // subtle hover lift + scale
-  const scaleAmt = hover ? 1.02 : 1;
+  // Eased hover state per card, so the zoom flows in/out instead of popping.
+  const key = cfg.title || (cfg.x + "," + cfg.y);
+  if (!cardHover[key]) cardHover[key] = 0;
+  cardHover[key] = lerp(cardHover[key], isOver ? 1 : 0, 0.12);
+  const t = cardHover[key];               // 0..1 eased hover amount
+  const hover = t > 0.5;                   // for discrete color/label choices
+
+  // smooth lift + zoom driven by the eased value
+  const scaleAmt = 1 + 0.06 * t;
   const cw = cardW * scaleAmt;
   const ch = cardH * scaleAmt;
   const cx = cardX - (cw - cardW) / 2;
-  const cy = cardY - (ch - cardH) / 2 + (hover ? -6 * scaleFactor : 0);
+  const cy = cardY - (ch - cardH) / 2 - 12 * scaleFactor * t;
 
   push();
 
-  // soft drop shadow
+  // optional theme tint color (e.g. Interaction Design = yellow)
+  const tint = cfg.tint;  // [r, g, b] or undefined
+
+  // soft drop shadow (eased)
   noStroke();
-  fill(0, 0, 0, hover ? 110 : 80);
+  fill(0, 0, 0, lerp(80, 110, t));
   rect(cx, cy + 12 * scaleFactor, cw, ch, r);
 
-  // glass body
-  fill(255, 255, 255, hover ? 60 : 48);
-  stroke(255, 255, 255, hover ? 110 : 80);
+  // hover glow around the card edges (themed color), fades in with t
+  if (tint && t > 0.02) {
+    push();
+    drawingContext.shadowBlur = 34 * scaleFactor * t;
+    drawingContext.shadowColor = `rgba(${tint[0]}, ${tint[1]}, ${tint[2]}, ${0.9 * t})`;
+    noFill();
+    stroke(tint[0], tint[1], tint[2], 220 * t);
+    strokeWeight(2 * scaleFactor);
+    rect(cx, cy, cw, ch, r);
+    drawingContext.shadowBlur = 0;   // reset so it doesn't bleed into later draws
+    pop();
+  }
+
+  // glass body — tinted toward the theme color if provided (eased)
+  if (tint) {
+    fill(tint[0], tint[1], tint[2], lerp(40, 58, t));
+    stroke(tint[0], tint[1], tint[2], lerp(110, 200, t));
+  } else {
+    fill(255, 255, 255, lerp(48, 60, t));
+    stroke(255, 255, 255, lerp(80, 110, t));
+  }
   strokeWeight(1.1 * scaleFactor);
   rect(cx, cy, cw, ch, r);
 
-  // top sheen
+  // top sheen (eased)
   noStroke();
-  fill(255, 255, 255, hover ? 70 : 55);
+  fill(255, 255, 255, lerp(55, 70, t));
   rect(cx + 4 * scaleFactor, cy + 4 * scaleFactor,
        cw - 8 * scaleFactor, ch * 0.10, r);
-  fill(255, 255, 255, hover ? 150 : 120);
+  fill(255, 255, 255, lerp(120, 150, t));
   rect(cx + r, cy + 3 * scaleFactor, cw - r * 2, 2.5 * scaleFactor, 2 * scaleFactor);
 
   const kwSize = 15 * scaleFactor;
@@ -806,7 +852,7 @@ function drawProjectCard(cfg) {
     text(cfg.title, centerX, ty);
 
     // description
-    ty += 52 * scaleFactor;
+    ty += 46 * scaleFactor;
     textFont(fontB); textSize(23 * scaleFactor); textAlign(CENTER, TOP);
     fill(248, 244, 236, 220);
     text(cfg.desc, cx + 30 * scaleFactor, ty, cw - 60 * scaleFactor, textH);
@@ -833,20 +879,21 @@ function drawBalancingConnections() {
   const row3Y = row2Y + cardH2 + rowGap;
 
   // ── Row 1 ──
+  const interactionTint = [245, 201, 78]; // #f5c94e — Interaction Design theme
   bcImgArea = bcTitleArea = drawProjectCard({
-    x: col(0), y: row1Y, w: cardW, h: cardH, img: BCimg,
+    x: col(0), y: row1Y, w: cardW, h: cardH, img: BCimg, tint: interactionTint,
     keywords: ["Human-Centered Design", "Spatial Systems", "Research", "UX"],
     title: "BALANCING CONNECTIONS",
     desc: "Playful spatial interventions that turn campus quads into low-pressure spaces where students connect."
   });
   momentsImgArea = momentsTitleArea = drawProjectCard({
-    x: col(1), y: row1Y, w: cardW, h: cardH, img: MAimg, imgScale: 0.94, imgOffsetY: 30,
+    x: col(1), y: row1Y, w: cardW, h: cardH, img: MAimg, imgScale: 0.94, imgOffsetY: 30, tint: interactionTint,
     keywords: ["AI-Native", "Product Design", "Preventive Wellness"],
     title: "MOMENTS APP",
     desc: "An AI-first wellness app that reframes idle screen time into moments of mindfulness and resilience."
   });
   saImgArea = saTitleArea = drawProjectCard({
-    x: col(2), y: row1Y, w: cardW, h: cardH, img: SAimg, imgScale: 1.16,
+    x: col(2), y: row1Y, w: cardW, h: cardH, img: SAimg, imgScale: 1.16, tint: interactionTint,
     keywords: ["Accessibility", "Auditory UX", "Prototyping", "User Testing"],
     title: "SOUND AID",
     desc: "Sound-based interactions that help people with visual impairments navigate complex spaces with confidence."
@@ -854,19 +901,19 @@ function drawBalancingConnections() {
 
   // ── Row 2 (taller cards) ──
   hsImgArea = hsTitleArea = drawProjectCard({
-    x: col(0), y: row2Y, w: cardW, h: cardH2, img: HSimg, imgOffsetY: 45,
+    x: col(0), y: row2Y, w: cardW, h: cardH2, img: HSimg, imgOffsetY: 45, tint: [122, 216, 238],
     keywords: ["Game Design", "Cultural Heritage", "Systems Design", "Illustration"],
     title: "HASTASHILP",
     desc: "A card game that reconnects young adults with India's 500+ traditional crafts through learning-through-play."
   });
   hoshImgArea = hoshTitleArea = drawProjectCard({
-    x: col(1), y: row2Y, w: cardW, h: cardH2, img: Hoshimg, imgScale: 0.95, imgOffsetY: -120,
+    x: col(1), y: row2Y, w: cardW, h: cardH2, img: Hoshimg, imgScale: 0.95, imgOffsetY: -120, tint: [217, 59, 48],
     keywords: ["Visual Storytelling", "Narrative Design", "Illustration", "Poetry"],
     title: "ANGRY GOD'S DILEMMA",
     desc: "A reimagining of Tilism-e-Hoshruba that sparks reflection on identity, gender, and self-acceptance today."
   });
   ddImgArea = ddTitleArea = drawProjectCard({
-    x: col(2), y: row2Y, w: cardW, h: cardH2, img: DDimg, imgScale: 1.22, imgOffsetY: 30,
+    x: col(2), y: row2Y, w: cardW, h: cardH2, img: DDimg, imgScale: 1.22, imgOffsetY: 30, tint: [244, 148, 193],
     keywords: ["Branding", "Packaging Design", "Visual Identity", "Logo"],
     title: "DAREDEVIL Brewing Co.",
     desc: "A bold visual identity and packaging system that gives the Daredevil beer brand a striking shelf presence."
@@ -876,14 +923,14 @@ function drawBalancingConnections() {
   const cardH3 = 700 * scaleFactor;
   const row3StartX = (width - (cardW * 2 + gap)) / 2;
   ppImgArea = ppTitleArea = drawProjectCard({
-    x: row3StartX, y: row3Y, w: cardW, h: cardH3, img: PPimg,
+    x: row3StartX, y: row3Y, w: cardW, h: cardH3, img: PPimg, tint: [224, 102, 59],
     keywords: ["Print Design", "Research", "Editorial", "Field Study"],
     title: "PRINT PRODUCTION",
     desc: "A research-led book documenting Bangalore's dense print-workshop ecosystem, with real print samples."
   });
   MBimgArea = bbTitleArea = drawProjectCard({
     x: row3StartX + (cardW + gap), y: row3Y, w: cardW, h: cardH3, img: MBimg,
-    layout: "side", imgScale: 1.05, imgTilt: -0.1,
+    layout: "side", imgScale: 1.05, imgTilt: -0.1, tint: [245, 201, 78],
     keywords: ["Product Design", "Interaction Design", "Automotive", "Concept"],
     title: "Mercedes Benz R&D",
     desc: "A reimagined Mercedes-AMG Track Pace app that turns racing data into shareable, emotional stories."
