@@ -488,7 +488,7 @@ function drawBrandLogos() {
                 "Streamlined UPI payment flows"]
     },
     {
-      id: "abi", img: logoABI, fit: 1.0, cardExtra: 190,
+      id: "abi", img: logoABI, fit: 1.0, cardW: 470,
       role: "Sr. Graphic Designer",
       bullets: ["Brand systems, typography & packaging",
                 "Campaign toolkits",
@@ -595,8 +595,11 @@ function drawBrandLogos() {
 
     // hover card with role + bullet pointers
     if (h > 0.02) {
-      const cardW = plateW + (b.cardExtra || 110) * scaleFactor;
-      const cardX = px + plateW / 2 - cardW / 2;   // centered under the plate
+      // generous fixed width so the bullet text never gets cut off
+      const cardW = (b.cardW || 380) * scaleFactor;
+      // centered under the plate, but clamped to stay within the canvas
+      let cardX = px + plateW / 2 - cardW / 2;
+      cardX = constrain(cardX, 20 * scaleFactor, width - cardW - 20 * scaleFactor);
       const cardY = plateY + plateH + 14 * scaleFactor + lift;
       const cardH = 160 * scaleFactor;
       const a = h;
@@ -687,10 +690,10 @@ function drawProjectCard(cfg) {
     pop();
   }
 
-  // glass body — tinted toward the theme color if provided (eased)
+  // body — frosted/translucent at rest, fills to SOLID tint color on hover (eased)
   if (tint) {
-    fill(tint[0], tint[1], tint[2], lerp(40, 58, t));
-    stroke(tint[0], tint[1], tint[2], lerp(110, 200, t));
+    fill(tint[0], tint[1], tint[2], lerp(40, 255, t));   // solid on hover
+    stroke(tint[0], tint[1], tint[2], lerp(110, 255, t));
   } else {
     fill(255, 255, 255, lerp(48, 60, t));
     stroke(255, 255, 255, lerp(80, 110, t));
@@ -736,12 +739,14 @@ function drawProjectCard(cfg) {
       let xx = cX - rw.w / 2;
       for (const it of rw.items) {
         push();
-        fill(255, 255, 255, 50);
-        stroke(234, 255, 151, 120);
-        strokeWeight(1 * scaleFactor);
+        // pill: no fill, bright lime border + text at rest → black on the solid tint on hover
+        noFill();
+        stroke(lerp(234, 0, t), lerp(255, 0, t), lerp(151, 0, t), 255);
+        strokeWeight(0.8 * scaleFactor);
         rect(xx, yy, it.pillW, kwRowH, kwRowH / 2);
         noStroke();
-        fill(234, 255, 151);
+        // pill text: bright lime → black on hover
+        fill(lerp(234, 0, t), lerp(255, 0, t), lerp(151, 0, t), 255);
         text(it.kw, xx + kwPadX, yy + kwRowH / 2);
         pop();
         xx += it.pillW + kwGap;
@@ -777,18 +782,19 @@ function drawProjectCard(cfg) {
     let yy = cy + 55 * scaleFactor;
 
     // keyword pills — left-aligned, wrap within the column
+    // bright lime border + text at rest → black on the solid tint on hover
     textFont(fontC); textSize(kwSize); textAlign(LEFT, CENTER);
     let kx = colX;
     for (const kw of cfg.keywords) {
       const pillW = textWidth(kw) + kwPadX * 2;
       if (kx + pillW > colRight && kx > colX) { kx = colX; yy += kwRowH + kwRowGap; }
       push();
-      fill(255, 255, 255, 50);
-      stroke(234, 255, 151, 120);
-      strokeWeight(1 * scaleFactor);
+      noFill();
+      stroke(lerp(234, 0, t), lerp(255, 0, t), lerp(151, 0, t), 255);
+      strokeWeight(0.8 * scaleFactor);
       rect(kx, yy, pillW, kwRowH, kwRowH / 2);
       noStroke();
-      fill(234, 255, 151);
+      fill(lerp(234, 0, t), lerp(255, 0, t), lerp(151, 0, t), 255);
       text(kw, kx + kwPadX, yy + kwRowH / 2);
       pop();
       kx += pillW + kwGap;
@@ -800,18 +806,18 @@ function drawProjectCard(cfg) {
     strokeWeight(0.8 * scaleFactor);
     line(colX, ty, colRight, ty);
 
-    // title — left-aligned
+    // title — left-aligned (cream → black on hover)
     ty += 18 * scaleFactor;
     noStroke();
     textFont(font); textSize(34 * scaleFactor); textAlign(LEFT, TOP);
-    fill(hover ? color(234, 255, 151) : color(248, 244, 236));
+    fill(lerp(248, 0, t), lerp(244, 0, t), lerp(236, 0, t));
     text(cfg.title, colX, ty, colW);
     const titleLines = textWidth(cfg.title) > colW ? 2 : 1;
 
-    // description — left-aligned
+    // description — left-aligned (cream → black on hover)
     ty += 40 * scaleFactor * titleLines + 16 * scaleFactor;
     textFont(fontB); textSize(20 * scaleFactor); textAlign(LEFT, TOP);
-    fill(248, 244, 236, 220);
+    fill(lerp(248, 0, t), lerp(244, 0, t), lerp(236, 0, t), lerp(220, 255, t));
     text(cfg.desc, colX, ty, colW, ch);
 
   } else {
@@ -843,7 +849,8 @@ function drawProjectCard(cfg) {
     const titleLead = 40 * scaleFactor;   // tighter line spacing for 2-line titles
     textFont(font); textSize(43 * scaleFactor); textAlign(CENTER, TOP);
     textLeading(titleLead);
-    fill(hover ? color(234, 255, 151) : color(248, 244, 236));
+    // title: cream at rest → black on hover (readable on the solid tint)
+    fill(lerp(248, 0, t), lerp(244, 0, t), lerp(236, 0, t));
     text(cfg.title, centerX, ty);
 
     // description — advance past however many title lines there are
@@ -851,7 +858,8 @@ function drawProjectCard(cfg) {
     ty += 46 * scaleFactor + (titleLines - 1) * titleLead;
     textFont(fontB); textSize(23 * scaleFactor); textAlign(CENTER, TOP);
     textLeading(28 * scaleFactor);   // normal spacing for the wrapped description
-    fill(248, 244, 236, 220);
+    // description: cream at rest → black on hover
+    fill(lerp(248, 0, t), lerp(244, 0, t), lerp(236, 0, t), lerp(220, 255, t));
     text(cfg.desc, cx + 30 * scaleFactor, ty, cw - 60 * scaleFactor, textH);
   }
 
