@@ -533,7 +533,26 @@ function drawCustomCursor() {
     line(mouseX, mouseY + a, mouseX, mouseY - a);         // vertical line
     line(mouseX, mouseY - a, mouseX - a, mouseY);         // left leg
     line(mouseX, mouseY - a, mouseX + a, mouseY);         // right leg
+  } else {
+    // idle: a little lime sparkle star
+    noStroke();
+    fill(234, 255, 151);
+    drawSparkle(mouseX, mouseY, 11 * scaleFactor, 3.6 * scaleFactor);
   }
 
+  pop();
+}
+
+// 4-point sparkle (✦): outer points at r, concave inner points at innerR
+function drawSparkle(cx, cy, r, innerR) {
+  push();
+  translate(cx, cy);
+  beginShape();
+  for (let i = 0; i < 8; i++) {
+    const ang = (PI / 4) * i - PI / 2;
+    const rad = i % 2 === 0 ? r : innerR;
+    vertex(cos(ang) * rad, sin(ang) * rad);
+  }
+  endShape(CLOSE);
   pop();
 }
