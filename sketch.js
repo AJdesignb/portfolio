@@ -241,7 +241,7 @@ function draw() {
   contentPush += contentPushVel;
 
   // Fixed downward offset for the whole project section, to clear the logo row
-  const projectsBaseOffset = 100 * scaleFactor;
+  const projectsBaseOffset = 20 * scaleFactor;
   push();
   translate(0, contentPush + projectsBaseOffset);
   drawBalancingConnections();  // draws all 8 project cards
@@ -512,7 +512,7 @@ function drawBrandLogos() {
 
   // Section label with a one-time typewriter animation
   const labelFull = "//Brands I've worked with";
-  const labelY = 1010 * scaleFactor;
+  const labelY = 1030 * scaleFactor;
 
   // Start typing once the label scrolls into view
   const labelScreenY = labelY - (window.scrollY || 0);
@@ -532,21 +532,30 @@ function drawBrandLogos() {
   const blink = floor(frameCount / 45) % 2 === 0;
   if (brandLabelStarted && (typing || blink)) shown += "_";
 
+  const labelX = 90 * scaleFactor;
+  const labelTextY = labelY + 24 * scaleFactor;  // text nudged down (logos stay on labelY)
   push();
   textFont(fontC);
   textSize(26 * scaleFactor);
-  textAlign(CENTER, TOP);
+  textAlign(LEFT, TOP);
   fill(234, 255, 151);
-  text(shown, width / 2, labelY);
+  text(shown, labelX, labelTextY);
   pop();
 
-  // Layout: 4 evenly spaced plates
-  const plateW = 280 * scaleFactor;
+  // Measure the full label width (so logos start right after the sentence)
+  push();
+  textFont(fontC);
+  textSize(26 * scaleFactor);
+  const labelW = textWidth(labelFull);
+  pop();
+
+  // Layout: logos continue on the SAME line, right after the label text
+  const plateW = 210 * scaleFactor;
   const plateH = 95 * scaleFactor;
-  const gap = 40 * scaleFactor;
-  const totalW = brands.length * plateW + (brands.length - 1) * gap;
-  let startX = (width - totalW) / 2;
-  const plateY = 1060 * scaleFactor;
+  const gap = 16 * scaleFactor;                 // tight — reads as one line
+  let startX = labelX + labelW + 50 * scaleFactor;
+  // vertically center the logo row on the label's text line, nudged down a bit
+  const plateY = labelY + 13 * scaleFactor - plateH / 2 + 28 * scaleFactor;
 
   for (let i = 0; i < brands.length; i++) {
     const b = brands[i];
@@ -565,43 +574,10 @@ function drawBrandLogos() {
     b._area = { x: px, y: plateY, w: plateW, h: plateH };
 
     const lift = h * -8 * scaleFactor;
-    const r = 22 * scaleFactor; // pill-like rounded radius
 
-    const glow = [234, 255, 151]; // lime — matches the hover card
+    // (No plate/box — just the logo. It still lifts & brightens slightly on hover.)
 
-    push();
-    // frosted-glass plate — same language as the keyword pills (visible idle)
-    // soft drop shadow
-    noStroke();
-    fill(0, 0, 0, 55 + 25 * h);
-    rect(px, plateY + 5 * scaleFactor + lift, plateW, plateH, r);
-
-    // themed edge glow on hover (fades in with h) — soft & diffuse
-    if (h > 0.02) {
-      push();
-      drawingContext.shadowBlur = 40 * scaleFactor * h;
-      drawingContext.shadowColor = `rgba(${glow[0]}, ${glow[1]}, ${glow[2]}, ${0.55 * h})`;
-      noFill();
-      stroke(glow[0], glow[1], glow[2], 110 * h);
-      strokeWeight(1.4 * scaleFactor);
-      rect(px, plateY + lift, plateW, plateH, r);
-      drawingContext.shadowBlur = 0;
-      pop();
-    }
-
-    // body + border — tint toward lime as hover increases
-    fill(lerp(255, glow[0], h), lerp(255, glow[1], h), lerp(255, glow[2], h), 42 + 18 * h);
-    stroke(lerp(255, glow[0], h), lerp(255, glow[1], h), lerp(255, glow[2], h), 55 + 100 * h);
-    strokeWeight(0.8 * scaleFactor);
-    rect(px, plateY + lift, plateW, plateH, r);
-    // top sheen highlight
-    noStroke();
-    fill(255, 255, 255, 30 + 15 * h);
-    rect(px + 3 * scaleFactor, plateY + lift + 3 * scaleFactor,
-         plateW - 6 * scaleFactor, plateH * 0.42, r);
-    pop();
-
-    // logo, contained within the plate with padding, preserving aspect ratio
+    // logo, contained within the plate area with padding, preserving aspect ratio
     if (b.img) {
       const pad = 22 * scaleFactor;
       const maxW = (plateW - pad * 2) * (b.fit || 1);
@@ -612,7 +588,7 @@ function drawBrandLogos() {
       const dx = px + (plateW - dw) / 2;
       const dy = plateY + lift + (plateH - dh) / 2;
       push();
-      tint(255, 200 + 55 * h); // slightly brighter on hover
+      tint(255, 255); // full opacity
       image(b.img, dx, dy, dw, dh);
       pop();
     }
