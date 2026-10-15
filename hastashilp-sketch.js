@@ -1,4 +1,3 @@
-
 let font;
 let fontB;
 
@@ -10,12 +9,14 @@ let lastScrollY = 0;
 let scrollDirection = "";
 let scrollTimeout;
 
-
 let scaleFactor = 1;
-let canvasWidth = 1600;
-let canvasHeight = 8000;
+let canvasWidth = 1600;         // logical content width (design space)
+// Last image (HSimgL) sits at y=6700 and is 1150 tall → ends at ~7850. Add a
+// small margin so the scroll (and dark frame) ends just past it.
+const CONTENT_HEIGHT = 7900;    // logical content height (design space)
+let canvasHeight = 7900;
 
-// let HSimgB;
+// let HSimgB; // (commented out — not used)
 let HSimg;
 let HSimgC;
 let HSimgD;
@@ -36,14 +37,13 @@ let Insta;
 function preload() {
   font = loadFont("Rosean.ttf");
   fontB = loadFont("Coolvetica Rg.otf");
-  HSimg = loadImage("HSimg.png");
-  // HSimgB = loadImage("HSimgB.jpg");
+  HSimg  = loadImage("HSimg.png");
   HSimgC = loadImage("HSimgC.jpg");
   HSimgD = loadImage("HSimgD.jpg");
   HSimgE = loadImage("HSimgE.jpg");
   HSimgF = loadImage("HSimgF.jpg");
   HSimgG = loadImage("HSimgG.jpg");
-  HSimgH = loadImage("HSimgH.jpg");
+  HSimgH = loadImage("HSimgH.png"); // replaced jpg → png
   HSimgI = loadImage("HSimgI.jpg");
   HSimgJ = loadImage("HSimgJ.jpg");
   HSimgK = loadImage("HSimgK.jpg");
@@ -55,12 +55,38 @@ function preload() {
 }
 
 function setup() {
-  calculateCanvasSize();
-  
-  const cnv = createCanvas(canvasWidth, canvasHeight);
-  const frame = document.querySelector(".canvas-frame");
-  if (frame) cnv.parent(frame);
+  // Don't let the browser restore an old scroll position onto our tall spacer,
+  // which would translate all content off-screen on reload.
+  if ("scrollRestoration" in history) history.scrollRestoration = "manual";
+  window.scrollTo(0, 0);
 
+  calculateCanvasSize();
+
+  // VIEWPORT-SIZED canvas (fixed to the screen). The page scrolls via a spacer
+  // div; we draw content offset by scrollY. This keeps the canvas tiny (~1 screen)
+  // instead of an 8000px surface, so repaints are cheap and the cursor is smooth.
+  const cnv = createCanvas(windowWidth, windowHeight);
+
+  // p5 appends the canvas inside .canvas-section (.canvas-frame). We hide that
+  // section (display:none), which would also hide the canvas (a display:none
+  // ancestor renders the whole subtree at 0x0). So move the canvas to <body>.
+  document.body.appendChild(cnv.elt);
+
+  cnv.style("position", "fixed");
+  cnv.style("top", "0");
+  cnv.style("left", "0");
+  cnv.style("display", "block");
+  cnv.style("z-index", "0"); // behind header/footer (z-index:2), above page bg
+
+  // Transparent page backgrounds so the fixed canvas shows through.
+  document.body.style.background = "transparent";
+  document.documentElement.style.background = "transparent";
+  document.body.style.display = "block";
+
+  // Spacer gives the document its real scroll height (content height, scaled)
+  setSpacerHeight();
+
+  frameRate(60);
 
   for (let i = 0; i < STAR_COUNT; i++) {
     stars.push({
@@ -84,33 +110,44 @@ function setup() {
   noCursor(); // hide the real cursor — we draw a custom one
 }
 
-function calculateCanvasSize() {
-  const baseWidth = 1600;
-  const baseHeight = 8000;
-  
-  if (windowWidth < 768) {
-    scaleFactor = 0.4;
-    canvasWidth = baseWidth * scaleFactor;
-    canvasHeight = baseHeight * scaleFactor;
-  } else if (windowWidth < 1024) {
-    scaleFactor = 0.6;
-    canvasWidth = baseWidth * scaleFactor;
-    canvasHeight = baseHeight * scaleFactor;
-  } else if (windowWidth < 1440) {
-    scaleFactor = 0.8;
-    canvasWidth = baseWidth * scaleFactor;
-    canvasHeight = baseHeight * scaleFactor;
-  } else {
-    scaleFactor = 1;
-    canvasWidth = baseWidth;
-    canvasHeight = baseHeight;
+// Create/size an invisible spacer so the page scrolls the full content height.
+function setSpacerHeight() {
+  let spacer = document.getElementById("scroll-spacer");
+  if (!spacer) {
+    spacer = document.createElement("div");
+    spacer.id = "scroll-spacer";
+    spacer.style.position = "relative";
+    spacer.style.width = "1px";
+    spacer.style.pointerEvents = "none";
+    const main = document.querySelector(".canvas-section");
+    if (main) main.style.display = "none"; // hide the old in-flow canvas frame
+    document.body.insertBefore(spacer, document.querySelector(".footer"));
   }
+  // Small buffer accounts for the top padding we push the content down by
+  // (header height + gaps) so the last image stays fully reachable.
+  const topBuffer = 70;
+  spacer.style.height = (CONTENT_HEIGHT * scaleFactor + topBuffer) + "px";
+}
+
+function calculateCanvasSize() {
+  const baseWidth = 1600; // the content's design width
+
+  // Scale the 1600px design space to fit the viewport width, but never scale
+  // UP past 1:1 — so on wide monitors the content caps at 1600px wide and sits
+  // centered with margins (the "framed" look). A small side padding keeps it
+  // off the very edges.
+  const sidePadding = 48;
+  scaleFactor = Math.min(1, (windowWidth - sidePadding * 2) / baseWidth);
+
+  canvasWidth = baseWidth * scaleFactor;
+  canvasHeight = CONTENT_HEIGHT * scaleFactor;
 }
 
 function windowResized() {
   calculateCanvasSize();
-  resizeCanvas(canvasWidth, canvasHeight);
-  
+  resizeCanvas(windowWidth, windowHeight);
+  setSpacerHeight();
+
   stars = [];
   for (let i = 0; i < STAR_COUNT; i++) {
     stars.push({
@@ -122,19 +159,73 @@ function windowResized() {
   }
 }
 
+// ─── DRAW ────────────────────────────────────────────────────────────────────
+
 function draw() {
-  background(15);
+  // Cream page background on the sides (matches the rest of the site).
+  background(248, 244, 236);
 
-  drawGalaxy();
+  // The centered content frame: 1600px-wide design column.
+  const contentW = 1600 * scaleFactor;
+  const offsetX = Math.max(0, (width - contentW) / 2);
+  const radius = 20 * scaleFactor;
 
-  // Main Heading
+  // The header and footer are in normal flow (they scroll with the page), while
+  // the canvas is fixed to the viewport. Measure where each sits in the viewport
+  // RIGHT NOW so the frame starts just below the header's visible bottom edge and
+  // ends just above the footer's visible top edge — keeping all four corners clear.
+  const headerEl = document.querySelector(".site-header");
+  const footerEl = document.querySelector(".footer");
+  const headerRect = headerEl ? headerEl.getBoundingClientRect() : null;
+  const footerRect = footerEl ? footerEl.getBoundingClientRect() : null;
+
+  const gap = 24; // breathing room between the frame and the bars / screen edges
+  const headerBottom = headerRect ? Math.max(0, headerRect.bottom) : 0;
+  const footerTop = footerRect ? Math.min(height, footerRect.top) : height;
+
+  const frameTop = headerBottom + gap;
+  const frameH = Math.max(0, footerTop - gap - frameTop);
+
+  // Dark rounded frame behind the content, with a soft drop shadow (same as the
+  // old CSS canvas: 0 20px 40px rgba(0,0,0,0.6)).
+  push();
+  drawingContext.save();
+  drawingContext.shadowColor = "rgba(0,0,0,0.6)";
+  drawingContext.shadowBlur = 40 * scaleFactor;
+  drawingContext.shadowOffsetX = 0;
+  drawingContext.shadowOffsetY = 20 * scaleFactor;
+  noStroke();
+  fill(15);
+  rect(offsetX, frameTop, contentW, frameH, radius);
+  drawingContext.restore();
+  pop();
+
+  // Galaxy stars, clipped to the dark frame so they don't spill onto the cream.
+  push();
+  drawingContext.save();
+  drawingContext.beginPath();
+  roundedRectPath(drawingContext, offsetX, frameTop, contentW, frameH, radius);
+  drawingContext.clip();
+  translate(offsetX, frameTop);
+  drawGalaxy(contentW, frameH);
+  drawingContext.restore();
+  pop();
+
+  // ── Everything below scrolls: shift the whole content block up by scrollY ──
+  // Center the 1600px-wide column horizontally, and push it down so it starts
+  // inside the frame with breathing room below the top edge.
+  const contentPadTop = frameTop + 20 * scaleFactor;
+  push();
+  translate(offsetX, contentPadTop - (window.scrollY || 0));
+
+  // ── Main Heading ────────────────────────────────────────────────────────────
   textFont(font);
   textSize(120 * scaleFactor);
   fill(248, 244, 236);
   textAlign(LEFT, TOP);
   text("HASTASHILP", 50 * scaleFactor, 100 * scaleFactor);
 
-  // Subtitle
+  // ── Subtitle ──────────────────────────────────────────────────────────────
   textFont(fontB);
   textSize(40 * scaleFactor);
   fill(248, 244, 236, 200);
@@ -144,25 +235,12 @@ function draw() {
   fill(234, 255, 151);
   text("Game Design | Conceptualisation | Prototyping | User testing", 50 * scaleFactor, 280 * scaleFactor);
   text("8 Weeks | Bangalore, India", 50 * scaleFactor, 310 * scaleFactor);
-  
+
   // 2nd image (here because we wanted an overlap)
-  image(
-    HSimgC, 
-    0 * scaleFactor, 
-    750 * scaleFactor, 
-    1600 * scaleFactor, 
-    1150 * scaleFactor
-  );
+  drawCull(HSimgC, 0 * scaleFactor, 750 * scaleFactor, 1600 * scaleFactor, 1150 * scaleFactor);
 
-  // Cover Image 
-  if (HSimg) {
-    let imgX = 690 * scaleFactor;
-    let imgY = 120 * scaleFactor;
-    let imgW = 900 * scaleFactor;
-    let imgH = 720 * scaleFactor;
-
-    image(HSimg, imgX, imgY, imgW, imgH);
-  }
+  // Cover Image
+  drawCull(HSimg, 690 * scaleFactor, 120 * scaleFactor, 900 * scaleFactor, 720 * scaleFactor);
 
   // Body Text - positioned below image
   textSize(25 * scaleFactor);
@@ -174,111 +252,77 @@ function draw() {
     1400 * scaleFactor,
     1200 * scaleFactor
   );
-  
-  //3rd Image
-  image(
-    HSimgD, 
-    0 * scaleFactor, 
-    1460 * scaleFactor, 
-    1600 * scaleFactor, 
-    1150 * scaleFactor
-  );
 
-  //4th Image
-  image(
-    HSimgE, 
-    0 * scaleFactor, 
-    2313 * scaleFactor, 
-    1600 * scaleFactor, 
-    560 * scaleFactor
-  );
-  
-  //5th Image
-  image(
-    HSimgF, 
-    0 * scaleFactor, 
-    2870 * scaleFactor, 
-    1600 * scaleFactor, 
-    560 * scaleFactor
-  );
+  // 3rd Image
+  drawCull(HSimgD, 0 * scaleFactor, 1460 * scaleFactor, 1600 * scaleFactor, 1150 * scaleFactor);
+  // 4th Image
+  drawCull(HSimgE, 0 * scaleFactor, 2313 * scaleFactor, 1600 * scaleFactor, 560 * scaleFactor);
+  // 5th Image
+  drawCull(HSimgF, 0 * scaleFactor, 2870 * scaleFactor, 1600 * scaleFactor, 560 * scaleFactor);
+  // 6th Image
+  drawCull(HSimgG, 0 * scaleFactor, 3430 * scaleFactor, 1600 * scaleFactor, 1000 * scaleFactor);
+  // 7th Image
+  drawCull(HSimgH, 0 * scaleFactor, 4000 * scaleFactor, 1600 * scaleFactor, 1000 * scaleFactor);
+  // 8th Image
+  drawCull(HSimgI, 0 * scaleFactor, 5000 * scaleFactor, 800 * scaleFactor, 600 * scaleFactor);
+  // 9th Image
+  drawCull(HSimgJ, 800 * scaleFactor, 5000 * scaleFactor, 800 * scaleFactor, 600 * scaleFactor);
+  // 10th Image
+  drawCull(HSimgK, 0 * scaleFactor, 5550 * scaleFactor, 1600 * scaleFactor, 1150 * scaleFactor);
+  // 11th Image
+  drawCull(HSimgL, 0 * scaleFactor, 6700 * scaleFactor, 1600 * scaleFactor, 1150 * scaleFactor);
 
-  //6th Image
-  image(
-    HSimgG, 
-    0 * scaleFactor, 
-    3430 * scaleFactor, 
-    1600 * scaleFactor, 
-    1000 * scaleFactor
-  );
+  pop(); // end scrolled content block
 
-  //7th Image
-  image(
-    HSimgH, 
-    0 * scaleFactor, 
-    4000 * scaleFactor, 
-    1600 * scaleFactor, 
-    1000 * scaleFactor
-  );
-
-  //8th Image
-  image(
-    HSimgI, 
-    0 * scaleFactor, 
-    5000 * scaleFactor, 
-    800 * scaleFactor, 
-    600 * scaleFactor
-  );
-
-  //9th Image
-  image(
-    HSimgJ, 
-    800 * scaleFactor, 
-    5000 * scaleFactor, 
-    800 * scaleFactor, 
-    600 * scaleFactor
-  );
-
-  //10th Image
-  image(
-    HSimgK, 
-    0 * scaleFactor, 
-    5550 * scaleFactor, 
-    1600 * scaleFactor, 
-    1150 * scaleFactor
-  );
-
-  //11th Image
-  image(
-    HSimgL, 
-    0 * scaleFactor, 
-    6700 * scaleFactor, 
-    1600 * scaleFactor, 
-    1150 * scaleFactor
-  );
-
-
+  // Cursor is drawn in SCREEN space (not scrolled) so it tracks the mouse.
   drawCustomCursor();
 }
 
-function drawGalaxy() {
+// Draw an image at content-space (x, y) with size (w, h), but ONLY if it's
+// within the viewport — big perf win, skips images scrolled off-screen.
+function drawCull(img, x, y, w, h) {
+  if (!img) return;
+  const scrollY = window.scrollY || 0;
+  const vh = window.innerHeight || height;
+  const margin = 300; // small buffer so images are ready just before they enter
+  const screenTop = y - scrollY;
+  if (screenTop + h < -margin || screenTop > vh + margin) return; // off-screen
+  image(img, x, y, w, h);
+}
+
+// ─── GALAXY ──────────────────────────────────────────────────────────────────
+
+// Trace a rounded-rectangle path on the raw 2D context (used for clipping the
+// galaxy to the dark content frame).
+function roundedRectPath(ctx, x, y, w, h, r) {
+  r = Math.min(r, w / 2, h / 2);
+  ctx.moveTo(x + r, y);
+  ctx.arcTo(x + w, y,     x + w, y + h, r);
+  ctx.arcTo(x + w, y + h, x,     y + h, r);
+  ctx.arcTo(x,     y + h, x,     y,     r);
+  ctx.arcTo(x,     y,     x + w, y,     r);
+  ctx.closePath();
+}
+
+function drawGalaxy(frameW, frameH) {
+  const w = frameW || width;
+  const h = frameH || height;
   noStroke();
   fill(255);
 
   for (let s of stars) {
+    const sx = s.x % w;
+    const sy = s.y % h;
     const twinkle = random(-0.3, 0.3);
     const starSize = max(0.5, s.size + twinkle);
-
-    circle(s.x, s.y, starSize);
-
+    circle(sx, sy, starSize);
     s.y += s.speed;
-
-    if (s.y > height) {
+    if (s.y > h) {
       s.y = 0;
-      s.x = random(width);
+      s.x = random(w);
     }
   }
 }
-
 
 // ── Custom cursor ────────────────────────────────────────────────────────────
 function drawCustomCursor(label) {
