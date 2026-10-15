@@ -88,7 +88,7 @@ const STAR_COUNT = 600;
 
 let scaleFactor = 1;
 let canvasWidth = 1600;
-let canvasHeight = 4200;
+let canvasHeight = 4090;
 
 function preload() {
   font = loadFont("Rosean.ttf");
@@ -152,7 +152,7 @@ function setup() {
 
 function calculateCanvasSize() {
   const baseWidth = 1600;
-  const baseHeight = 4200;
+  const baseHeight = 4090;
   
   if (windowWidth < 768) {
     scaleFactor = 0.4;

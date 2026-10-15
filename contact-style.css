@@ -62,6 +62,40 @@ justify-content: space-between;
   opacity: 0.7;
 }
 
+/* Header clock widget (home icon + live local time + city) */
+.clock-widget {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+  color: #0f0f10;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+}
+
+.clock-widget:hover {
+  opacity: 0.7;
+}
+
+.clock-home {
+  flex: none;
+  color: #0f0f10;
+}
+
+.clock-time {
+  font-family: "CourierNewCustom", ui-monospace, monospace;
+  font-weight: bold;
+  font-size: 14px;
+  letter-spacing: 0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+.clock-city {
+  font-family: "CourierNewCustom", ui-monospace, monospace;
+  font-size: 14px;
+  opacity: 0.7;
+}
+
 .header-right {
   display: flex;
   align-items: center;

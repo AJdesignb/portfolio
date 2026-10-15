@@ -4,12 +4,19 @@
     <meta charset="UTF-8" />
     <title>Aashi Portfolio – Haywards Brand Explorations</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="stylesheet" href="style.css?v=gh2" />
+    <link rel="stylesheet" href="style.css?v=clock1" />
   </head>
   <body>
     <!-- Top bar -->
     <header class="site-header">
-      <a href="index.html" class="logo" style="text-decoration: none; color: #0f0f10;">AJM</a>
+      <a href="index.html" class="clock-widget" aria-label="Home — local time">
+        <svg class="clock-home" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+          <path d="M3 11.5 12 4l9 7.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M5 10.5V20h14v-9.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span class="clock-time" data-clock-time>--:--:--</span>
+        <span class="clock-city" data-clock-city></span>
+      </a>
 
       <nav class="header-right">
         <a href="index.html" class="nav-link">Home</a>
@@ -51,6 +58,8 @@
       <p class="footer-b-legal">© 2026 Aashi Jain — all rights (and a few wrongs) reserved</p>
     </footer>
 
+    <!-- header clock widget -->
+    <script src="clock.js?v=1"></script>
     <!-- p5 library -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
     <!-- haywards sketch -->

@@ -14,6 +14,12 @@ let DDimgG;
 let stars = [];
 const STAR_COUNT = 600;
 
+// Custom cursor scroll-direction tracking
+let lastScrollY = 0;
+let scrollDirection = "";
+let scrollTimeout;
+
+
 let scaleFactor = 1;
 let canvasWidth = 1600;
 let canvasHeight = 8700;
@@ -58,6 +64,18 @@ function setup() {
       speed: random(0.05, 0.2)
     });
   }
+
+  // Track scroll direction for the custom cursor's up/down arrow
+  window.addEventListener("scroll", () => {
+    let currentScrollY = window.scrollY;
+    if (currentScrollY > lastScrollY) scrollDirection = "down";
+    else if (currentScrollY < lastScrollY) scrollDirection = "up";
+    lastScrollY = currentScrollY;
+    clearTimeout(scrollTimeout);
+    scrollTimeout = setTimeout(() => { scrollDirection = ""; }, 800);
+  });
+
+  noCursor(); // hide the real cursor — we draw a custom one
 }
 
 function calculateCanvasSize() {
@@ -196,6 +214,8 @@ function draw() {
   );
   
 
+
+  drawCustomCursor();
 }
 
 function drawGalaxy() {
@@ -217,3 +237,57 @@ function drawGalaxy() {
   }
 }
 
+
+// ── Custom cursor ────────────────────────────────────────────────────────────
+function drawCustomCursor(label) {
+  push();
+  const cs = (typeof scaleFactor !== "undefined") ? scaleFactor : 1;
+  const cursorSize = label ? 70 * cs : 60 * cs;
+
+  stroke(248, 244, 236);
+  strokeWeight(2);
+  fill(0);
+  circle(mouseX, mouseY, cursorSize);
+
+  if (label) {
+    noStroke();
+    if (typeof fontB !== "undefined" && fontB) textFont(fontB);
+    textSize(18 * cs);
+    textAlign(CENTER, CENTER);
+    fill(248, 244, 236);
+    text(label, mouseX, mouseY);
+  } else if (scrollDirection === "down") {
+    stroke(248, 244, 236);
+    strokeWeight(2 * cs);
+    const a = 7 * cs;
+    line(mouseX, mouseY - a, mouseX, mouseY + a);
+    line(mouseX, mouseY + a, mouseX - a, mouseY);
+    line(mouseX, mouseY + a, mouseX + a, mouseY);
+  } else if (scrollDirection === "up") {
+    stroke(248, 244, 236);
+    strokeWeight(2 * cs);
+    const a = 7 * cs;
+    line(mouseX, mouseY + a, mouseX, mouseY - a);
+    line(mouseX, mouseY - a, mouseX - a, mouseY);
+    line(mouseX, mouseY - a, mouseX + a, mouseY);
+  } else {
+    noStroke();
+    fill(234, 255, 151);
+    drawSparkle(mouseX, mouseY, 11 * cs, 3.6 * cs);
+  }
+  pop();
+}
+
+// 4-point sparkle (✦)
+function drawSparkle(cx, cy, r, innerR) {
+  push();
+  translate(cx, cy);
+  beginShape();
+  for (let i = 0; i < 8; i++) {
+    const ang = (PI / 4) * i - PI / 2;
+    const rad = i % 2 === 0 ? r : innerR;
+    vertex(cos(ang) * rad, sin(ang) * rad);
+  }
+  endShape(CLOSE);
+  pop();
+}

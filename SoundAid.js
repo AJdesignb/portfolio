@@ -16,6 +16,12 @@ let SAimgJ;
 
 let stars = [];
 const STAR_COUNT = 600;
+
+// Custom cursor scroll-direction tracking
+let lastScrollY = 0;
+let scrollDirection = "";
+let scrollTimeout;
+
 let scaleFactor = 1;
 let canvasWidth = 1600;
 let canvasHeight = 9800;
@@ -32,7 +38,7 @@ function preload() {
 
   // Swap these filenames for your actual SoundAid images
   SAimg  = loadImage("SAimg.png");
-  SAimgA = loadImage("SAimgA.jpg");
+  SAimgA = loadImage("SAimgA.png");
   SAimgB = loadImage("SAimgB.png");
   SAimgC = loadImage("SAimgC.png");
   SAimgD = loadImage("SAimgD.png");
@@ -66,6 +72,18 @@ function setup() {
       speed: random(0.05, 0.2)
     });
   }
+
+  // Track scroll direction for the custom cursor's up/down arrow
+  window.addEventListener("scroll", () => {
+    let currentScrollY = window.scrollY;
+    if (currentScrollY > lastScrollY) scrollDirection = "down";
+    else if (currentScrollY < lastScrollY) scrollDirection = "up";
+    lastScrollY = currentScrollY;
+    clearTimeout(scrollTimeout);
+    scrollTimeout = setTimeout(() => { scrollDirection = ""; }, 800);
+  });
+
+  noCursor(); // hide the real cursor — we draw a custom one
 }
 
 function calculateCanvasSize() {
@@ -141,93 +159,32 @@ function draw() {
     1200 * scaleFactor
   );
 
-  // ── Cover image ───────────────────────────────────────────────────────────
-  if (SAimg) {
-    image(SAimgA, 0 * scaleFactor, 650 * scaleFactor, 1600 * scaleFactor, 890 * scaleFactor);
-  }
-  
-  //Img 2
-  image(
-    SAimgB,
-    0 * scaleFactor,
-    1550 * scaleFactor, 
-    1600 * scaleFactor, 
-    890 * scaleFactor
-  );
+  // ── Stacked full-width images (only drawn when on-screen for performance) ──
+  const H = 890 * scaleFactor;
+  drawCull(SAimgA, 650 * scaleFactor, H);
+  drawCull(SAimgB, 1550 * scaleFactor, H);
+  drawCull(SAimgC, 2450 * scaleFactor, H);
+  drawCull(SAimgD, 3350 * scaleFactor, H);
+  drawCull(SAimgE, 4250 * scaleFactor, H);
+  drawCull(SAimgF, 5150 * scaleFactor, H);
+  drawCull(SAimgG, 6050 * scaleFactor, H);
+  drawCull(SAimgH, 6950 * scaleFactor, H);
+  drawCull(SAimgI, 7850 * scaleFactor, H);
+  drawCull(SAimgJ, 8750 * scaleFactor, H);
 
-  //Img 3
-  image(
-    SAimgC,
-    0 * scaleFactor,
-    2450 * scaleFactor, 
-    1600 * scaleFactor, 
-    890 * scaleFactor
-  );
+  drawCustomCursor();
+}
 
-  //Img 4
-  image(
-    SAimgD,
-    0 * scaleFactor,
-    3350 * scaleFactor, 
-    1600 * scaleFactor, 
-    890 * scaleFactor
-  );
-
-  //Img 5
-  image(
-    SAimgE,
-    0 * scaleFactor,
-    4250 * scaleFactor, 
-    1600 * scaleFactor, 
-    890 * scaleFactor
-  );
-
-  //Img 6
-  image(
-    SAimgF,
-    0 * scaleFactor,
-    5150 * scaleFactor, 
-    1600 * scaleFactor, 
-    890 * scaleFactor
-  );
-
-  //Img 7
-  image(
-    SAimgG,
-    0 * scaleFactor,
-    6050 * scaleFactor, 
-    1600 * scaleFactor, 
-    890 * scaleFactor
-  );
-
-  //Img 8
-  image(
-    SAimgH,
-    0 * scaleFactor,
-    6950 * scaleFactor, 
-    1600 * scaleFactor, 
-    890 * scaleFactor
-  );
-
-  //Img 9
-  image(
-    SAimgI,
-    0 * scaleFactor,
-    7850 * scaleFactor, 
-    1600 * scaleFactor, 
-    890 * scaleFactor
-  );
-
-  //Img 10
-  image(
-    SAimgJ,
-    0 * scaleFactor,
-    8750 * scaleFactor, 
-    1600 * scaleFactor, 
-    890 * scaleFactor
-  );
-
-  // ── Menu overlay ──────────────────────────────────────────────────────────
+// Draw a full-width image at canvas-Y `y`, but ONLY if it's within the
+// viewport (big perf win — skips the ~90% of images scrolled off-screen).
+function drawCull(img, y, h) {
+  if (!img) return;
+  const scrollY = window.scrollY || 0;
+  const vh = window.innerHeight || height;
+  const margin = 300; // small buffer so images are ready just before they enter
+  const screenTop = y - scrollY;
+  if (screenTop + h < -margin || screenTop > vh + margin) return; // off-screen
+  image(img, 0, y, 1600 * scaleFactor, h);
 }
 
 // Helper — draws one full-width image at the given base-Y (pre-scale)
@@ -259,3 +216,57 @@ function drawGalaxy() {
 
 // ─── MOUSE ───────────────────────────────────────────────────────────────────
 
+
+// ── Custom cursor ────────────────────────────────────────────────────────────
+function drawCustomCursor(label) {
+  push();
+  const cs = (typeof scaleFactor !== "undefined") ? scaleFactor : 1;
+  const cursorSize = label ? 70 * cs : 60 * cs;
+
+  stroke(248, 244, 236);
+  strokeWeight(2);
+  fill(0);
+  circle(mouseX, mouseY, cursorSize);
+
+  if (label) {
+    noStroke();
+    if (typeof fontB !== "undefined" && fontB) textFont(fontB);
+    textSize(18 * cs);
+    textAlign(CENTER, CENTER);
+    fill(248, 244, 236);
+    text(label, mouseX, mouseY);
+  } else if (scrollDirection === "down") {
+    stroke(248, 244, 236);
+    strokeWeight(2 * cs);
+    const a = 7 * cs;
+    line(mouseX, mouseY - a, mouseX, mouseY + a);
+    line(mouseX, mouseY + a, mouseX - a, mouseY);
+    line(mouseX, mouseY + a, mouseX + a, mouseY);
+  } else if (scrollDirection === "up") {
+    stroke(248, 244, 236);
+    strokeWeight(2 * cs);
+    const a = 7 * cs;
+    line(mouseX, mouseY + a, mouseX, mouseY - a);
+    line(mouseX, mouseY - a, mouseX - a, mouseY);
+    line(mouseX, mouseY - a, mouseX + a, mouseY);
+  } else {
+    noStroke();
+    fill(234, 255, 151);
+    drawSparkle(mouseX, mouseY, 11 * cs, 3.6 * cs);
+  }
+  pop();
+}
+
+// 4-point sparkle (✦)
+function drawSparkle(cx, cy, r, innerR) {
+  push();
+  translate(cx, cy);
+  beginShape();
+  for (let i = 0; i < 8; i++) {
+    const ang = (PI / 4) * i - PI / 2;
+    const rad = i % 2 === 0 ? r : innerR;
+    vertex(cos(ang) * rad, sin(ang) * rad);
+  }
+  endShape(CLOSE);
+  pop();
+}
